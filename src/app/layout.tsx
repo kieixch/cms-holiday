@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Baloo_2, DM_Serif_Display, Inter } from "next/font/google";
+
+import { SITE_DESCRIPTION, SITE_TITLE, siteUrl } from "@/lib/seo";
+
 import "./globals.css";
 
 /* Tipografi ulang sesuai DESIGN.md:
@@ -30,12 +33,14 @@ const baloo = Baloo_2({
 });
 
 export const metadata: Metadata = {
+  // Basis absolut untuk canonical, OG, sitemap, dan robots — tanpa ini
+  // semua URL metadata jadi relatif dan tidak terbaca mesin pencari.
+  metadataBase: new URL(siteUrl()),
   title: {
-    default: "Banyuwangi Holiday - Paket Tour Banyuwangi",
+    default: SITE_TITLE,
     template: "%s | Banyuwangi Holiday",
   },
-  description:
-    "Paket tour Banyuwangi: open trip, private trip, WM 2D1N 3D2N 4D3N ke Kawah Ijen, Giri Keuwuran, Pulau Merah, dan pantai timur Banyuwangi.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "tour Banyuwangi",
     "paket tour Banyuwangi",
@@ -43,6 +48,29 @@ export const metadata: Metadata = {
     "Giri Keuwuran",
     "open trip Banyuwangi",
   ],
+  applicationName: "Holiday Banyuwangi",
+  // Default OG/Twitter untuk semua halaman; route yang punya halaman detail
+  // menimpa `title`/`description`/`url`-nya sendiri di generateMetadata
+  // (ingat: merge metadata Next bersifat shallow — lihat `pageOpenGraph`).
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "Holiday Banyuwangi",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: siteUrl(),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
+  // Verifikasi Google Search Console lewat env (konten meta disetel di
+  // Vercel). Kosong = field ini tidak dirender sama sekali.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
 };
 
 export const viewport: Viewport = {

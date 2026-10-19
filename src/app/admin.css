@@ -14,8 +14,9 @@
 }
 
 .admin-shell {
+  --admin-sidebar-w: 240px;
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: var(--admin-sidebar-w) 1fr;
   min-height: 100dvh;
 }
 
@@ -90,14 +91,23 @@
 }
 
 /*
- * Spinner navigasi antar-panel. `position: absolute` relatif ke
- * `.admin-main` supaya hanya menutupi panel kanan dan tidak pernah menutup
- * sidebar (berbeda dari overlay publik yang `fixed`).
+ * Spinner navigasi antar-panel. `position: fixed` terhadap viewport supaya
+ * selalu tampak di tengah layar (sticky) walau panel sedang di-scroll, TAPI
+ * hanya menutupi area konten — `left` diset sama dengan lebar sidebar supaya
+ * sidebar tetap terlihat dan bisa diklik selama halaman dimuat. Di layar
+ * sempit (≤900px) sidebar jadi panel geser tersembunyi, jadi overlay boleh
+ * full-width dengan z-index di bawah sidebar/backdrop (lihat media query),
+ * sehingga sidebar yang terbuka pun tidak ketutup. Scroll diblokir lewat
+ * `overflow: hidden` pada <body> dari `nav-progress.tsx` selama overlay ini
+ * aktif.
  */
 .admin-nav-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 40;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--admin-sidebar-w, 240px);
+  z-index: 90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -648,6 +658,14 @@
   .admin-main {
     /* Ruang untuk tombol hamburger yang mengapung di kiri atas. */
     padding: 64px 16px 48px;
+  }
+
+  /* Overlay loading: full-width (sidebar off-canvas tak terlihat), tapi
+     z-index sengaja di bawah sidebar (60), backdrop (55), dan tombol menu
+     (70) supaya sidebar yang terbuka tidak pernah ketutup spinner. */
+  .admin-nav-overlay {
+    left: 0;
+    z-index: 50;
   }
 
   .admin-media-upload__row {

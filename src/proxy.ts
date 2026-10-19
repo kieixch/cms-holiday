@@ -22,21 +22,29 @@ import { SESSION_COOKIE } from "./lib/session-constants";
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
+  // Semua rute admin diberi header noindex di sini — metadata <meta name=
+  // robots> hanya ada pada respons HTML yang berhasil render, sementara
+  // redirect 307 / 401 JSON tidak membawanya.
+  const noindex = (response: NextResponse): NextResponse => {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
+  };
+
   // Halaman login memang untuk pengunjung tanpa sesi (dan di situ sendiri
   // ada `redirectIfSignedIn` untuk yang sudah masuk).
-  if (pathname === "/admin/login") return NextResponse.next();
+  if (pathname === "/admin/login") return noindex(NextResponse.next());
 
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
 
   // API admin menjawab JSON 401, bukan redirect halaman HTML — klien fetch
   // (`gallery-uploader`, `asset-editor`) tidak bisa mengikuti redirect login.
   if (pathname.startsWith("/api/")) {
-    if (hasSession) return NextResponse.next();
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    if (hasSession) return noindex(NextResponse.next());
+    return noindex(NextResponse.json({ error: "Unauthorized." }, { status: 401 }));
   }
 
-  if (hasSession) return NextResponse.next();
-  return NextResponse.redirect(new URL("/admin/login", request.url));
+  if (hasSession) return noindex(NextResponse.next());
+  return noindex(NextResponse.redirect(new URL("/admin/login", request.url)));
 }
 
 export const config = {

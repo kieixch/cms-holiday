@@ -173,7 +173,9 @@ export function BioLinkPage({
                     >
                       <div className="hb-top">
                         <div className="hb-ico">
-                          {item.image ? <img src={item.image} alt="" /> : item.emoji}
+                          {item.image ? (
+                            <img loading="lazy" src={item.image} alt="" />
+                          ) : item.emoji}
                         </div>
                         <div className="hb-body">
                           <div className="hb-name">

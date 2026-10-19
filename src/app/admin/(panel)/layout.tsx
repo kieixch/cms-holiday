@@ -24,12 +24,12 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
 
       <main className="admin-main">
         {/*
-          Spinner saat pindah halaman antar-panel. Hanya menutupi panel kanan
-          (overlay `absolute` terhadap `.admin-main`), dan dimatikan lewat
-          perubahan `usePathname()` karena layout ini tidak ter-unmount.
-          Client-only, jadi tidak membungkus page dalam Suspense dan tidak
-          mengubah status HTTP — `redirect()` alias `/admin/media` tetap 307
-          dan `notFound()` tetap 404.
+          Spinner saat pindah halaman antar-panel. Overlay `fixed` hanya di
+          area konten (di sebelah kanan sidebar) dan mengunci scroll body
+          selama loading — dimatikan lewat perubahan `usePathname()` karena
+          layout ini tidak ter-unmount. Client-only, jadi tidak membungkus
+          page dalam Suspense dan tidak mengubah status HTTP — `redirect()`
+          alias `/admin/media` tetap 307 dan `notFound()` tetap 404.
         */}
         <AdminNavProgress />
         {children}

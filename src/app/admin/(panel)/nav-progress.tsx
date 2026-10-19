@@ -14,14 +14,31 @@ import { usePathname } from "next/navigation";
  * dan tanpa perlu refresh manual. Timer jaring pengaman memastikan spinner
  * tidak pernah menggantung (mis. kalau navigasi batal).
  *
- * Overlay diposisikan `absolute` terhadap `.admin-main` (lihat admin.css),
- * jadi hanya menutupi panel kanan dan tidak pernah menutup sidebar.
+ * Overlay memakai `position: fixed` dengan `left` = lebar sidebar (lihat
+ * admin.css), jadi selalu tampak di tengah area konten walau halaman sedang
+ * di-scroll — sidebar sengaja TIDAK ikut tertutup supaya menu tetap terlihat
+ * dan bisa diklik selama navigasi. Selama overlay aktif scroll <body> juga
+ * dikunci (`overflow: hidden`) supaya konten di belakang tidak bisa
+ * digerakkan sampai navigasi selesai.
  */
 export function AdminNavProgress() {
   const pathname = usePathname();
   const [pendingFrom, setPendingFrom] = useState<string | null>(null);
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const safetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const active = pendingFrom !== null && pendingFrom === pathname;
+
+  // Kunci scroll halaman selama spinner tampil. Nilai awal disimpan dan
+  // dikembalikan supaya tidak merusak scroll-lock yang mungkin sudah dipasang
+  // komponen lain (mis. modal gambar).
+  useEffect(() => {
+    if (!active) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [active]);
 
   useEffect(() => {
     function onClick(event: MouseEvent) {
@@ -59,7 +76,7 @@ export function AdminNavProgress() {
     };
   }, []);
 
-  if (pendingFrom === null || pendingFrom !== pathname) return null;
+  if (!active) return null;
 
   return (
     <div className="admin-nav-overlay" role="status" aria-live="polite" aria-label="Memuat halaman">

@@ -8,13 +8,15 @@
  *   2. src/styles/legacy.css - hasil migrasi dari <style> inline WordPress,
  *      ditulis oleh scripts/merge-css.mjs. Semua selector memakai prefix
  *      .hb2d1n sama seperti situs lama, jadi tidak menabrak preflight.
- *   3. gaya khusus panel admin (/admin)
+ *
+ * Gaya panel admin TIDAK ikut di sini: admin.css diimpor hanya oleh
+ * `src/app/admin/layout.tsx`, supaya halaman publik tidak mengunduh ~47 KB
+ * CSS yang tidak dipakai.
  * --------------------------------------------------------------------------- */
 @import "../styles/legacy.css";
 /* Palet dominasi hijau (override di atas legacy.css, yang tidak boleh diedit
    manual). Dipakai sebagai satu-satunya sumber perawatan warna di masa depan. */
 @import "../styles/green-palette.css";
-@import "./admin.css";
 
 /* Gambar opsional pada kartu tipe trip di beranda.
    Hanya dirender kalau `Category.cardImage` diisi, jadi halaman yang tidak

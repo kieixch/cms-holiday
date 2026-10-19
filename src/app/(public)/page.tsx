@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
+
+import { JsonLd } from "@/components/site/json-ld";
 import { PublicShell } from "@/components/site/public-shell";
 import { HomeBody } from "@/components/site/views";
+import { absoluteUrl, organizationGraph, pageOpenGraph, pageTwitter, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/seo";
 import { getHomePage, getNavItems } from "@/lib/site";
 
 /**
@@ -9,6 +13,16 @@ import { getHomePage, getNavItems } from "@/lib/site";
  * `revalidatePath("/")` supaya perubahan tampil langsung.
  */
 export const revalidate = 3600;
+
+// Judul/deskripsi/OG default ada di root layout; beranda hanya menambah
+// canonical eksplisit supaya versi www/non-www atau http/https tidak
+// dianggap halaman duplikat. OG/Twitter ditulis ulang lengkap karena merge
+// metadata Next bersifat shallow (lihat `pageOpenGraph`).
+export const metadata: Metadata = {
+  alternates: { canonical: absoluteUrl("/") },
+  openGraph: pageOpenGraph({ title: SITE_TITLE, description: SITE_DESCRIPTION, path: "/" }),
+  twitter: pageTwitter({ title: SITE_TITLE, description: SITE_DESCRIPTION }),
+};
 
 export default async function HomePage() {
   const [
@@ -38,6 +52,7 @@ export default async function HomePage() {
         footerHeart: settings.footerHeart,
       }}
     >
+      <JsonLd data={organizationGraph(settings)} />
       <HomeBody
         settings={settings}
         stats={stats.map((s) => ({ num: s.num, label: s.label }))}

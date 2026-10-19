@@ -15,9 +15,26 @@ import { prisma } from "@/lib/db";
  * pengunjung yang tiba dari tautan luar terkunci di halaman.
  *
  * Route handler Next tidak di-cache secara default (lihat docs Route
- * Handlers), dan `Cache-Control: no-store` dipasang eksplisit supaya simpanan
- * admin langsung terlihat tanpa menunggu.
+ * Handlers), jadi handler ini meng-opts-in ISR lewat `revalidate` di bawah.
+ * Perubahan admin tetap langsung terlihat karena `admin/halaman/actions.ts`
+ * memanggil `revalidatePath("/halaman/<slug>")` saat menyimpan — membuang
+ * `Cache-Control: no-store` tidak menunda apa pun, hanya membuat dokumen
+ * yang sudah jadi dilayani dari cache selama tidak ada perubahan.
  */
+
+export const revalidate = 3600;
+
+// Route handler dengan param dinamis ikut memakai `generateStaticParams`
+// untuk memrrender dokumen yang sudah ada saat build (docs Route Handlers >
+// Static Generation). Dokumen baru dari admin dirender on-demand, lalu
+// `revalidatePath("/halaman/<slug>")` membuang cache-nya saat disimpan.
+export async function generateStaticParams() {
+  const pages = await prisma.htmlPage.findMany({
+    where: { scope: "page", isPublished: true },
+    select: { slug: true },
+  });
+  return pages.map((page) => ({ slug: page.slug }));
+}
 
 export async function GET(
   _request: NextRequest,
@@ -43,7 +60,6 @@ export async function GET(
 
 const HTML_HEADERS: Record<string, string> = {
   "Content-Type": "text/html; charset=utf-8",
-  "Cache-Control": "no-store",
 };
 
 const NOT_FOUND_HTML = `<!doctype html>
