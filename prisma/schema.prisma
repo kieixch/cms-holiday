@@ -1,0 +1,688 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TripKind {
+  OPEN_TRIP
+  PRIVATE
+}
+
+enum PricingKind {
+  TABLE
+  ITEMS
+}
+
+enum FacilityVariant {
+  INCLUDE
+  EXCLUDE
+}
+
+/// Pengaturan global situs (singleton, id = "singleton")
+model SiteSettings {
+  id String @id @default("singleton")
+
+  siteName    String @default("Holiday Banyuwangi")
+  siteUrl     String @default("https://holidaybanyuwangi.com")
+  logoVariant String @default("svg") // "svg" | "emoji"
+
+  waNumber  String @default("628133111543")
+  waMessage String @default("Hai Holiday Banyuwangi, aku mau tanya paket trip")
+  /// Sapaan yang ditempel di depan pesan WhatsApp otomatis. Kosong = tanpa sapaan.
+  waGreeting String @default("")
+
+  /// Label tombol WhatsApp melayang. Kosong = memakai label bawaan "Chat Sekarang".
+  stickyWaLabel String @default("Chat Sekarang")
+  /// Link rotator (link alternatif Bitly dkk.) untuk tombol melayang.
+  /// Kosong = tetap memakai waNumber/waMessage seperti biasa.
+  stickyWaLink String @default("")
+
+  email     String @default("banyuwangiholliday@gmail.com")
+  instagram String @default("https://www.instagram.com/holiday.banyuwangi/")
+  tiktok    String @default("https://www.tiktok.com/@holiday.banyuwangi_")
+
+  footerText     String @default("Follow & DM kami buat info trip terbaru, promo seru, dan keseruan lainnya seputar Banyuwangi.")
+  footerHeading  String @default("Yuk, Mulai Petualanganmu! 🌴")
+  copyrightText  String @default("© 2026 Holiday Banyuwangi. All Rights Reserved.")
+  footerMadeWith String @default("Made with")
+  footerLocation String @default("in Banyuwangi")
+  footerHeart    String @default("🌴")
+
+  // Hero beranda
+  homeHeroBadges          String[]
+  homeHeroTitle           String   @default("Jelajahi Keindahan")
+  homeHeroAccent          String   @default("Banyuwangi")
+  homeHeroSuffix          String   @default("Bareng Kami!")
+  homeHeroText            String   @default("")
+  homeHeroDecos           String[]
+  /// Foto latar hero beranda. Kosong = memakai foto paket favorit pertama.
+  homeHeroImage           String?
+  homeHeroImageAlt        String?
+  homeHeroPrimaryLabel    String   @default("💬 Tanya via WhatsApp")
+  /// Link rotator untuk tombol WhatsApp utama hero beranda. Kosong = wa.me.
+  homeHeroWaLink          String   @default("")
+  homeHeroSecondaryLabel  String   @default("📦 Lihat Pilihan Trip")
+  homeHeroSecondaryAnchor String   @default("#tipe-trip")
+
+  // Seksi "pilihan tipe trip"
+  homeTypesTag    String @default("Pilihan Trip")
+  homeTypesTitle  String @default("Mau Liburan yang")
+  homeTypesAccent String @default("Mana")
+  homeTypesSuffix String @default("Hari Ini?")
+  homeTypesDesc   String @default("")
+  homeTypesAnchor String @default("tipe-trip")
+  /// Tampilkan seksi pilihan tipe trip di beranda.
+  homeTypesEnabled Boolean @default(true)
+
+  /// Jumlah kolom grid paket favorit di desktop. Nilai ini ikut diambil dari
+  /// CSS asli tiap halaman, bukan dihitung dari jumlah kartu.
+  homeGridColumns Int @default(3)
+
+  // Seksi paket favorit
+  homeFavTag    String @default("Paling Laris")
+  homeFavTitle  String @default("Paket")
+  homeFavAccent String @default("Favorit")
+  homeFavSuffix String @default("Traveler")
+  homeFavDesc   String @default("")
+  /// Tampilkan seksi paket favorit di beranda.
+  homeFavEnabled Boolean @default(true)
+
+  // Seksi kartu tautan halaman HTML (di bawah pilihan tipe trip)
+  homePgTag    String @default("Info & Panduan")
+  homePgTitle  String @default("Halaman")
+  homePgAccent String @default("Penting")
+  homePgSuffix String @default("")
+  homePgDesc   String @default("")
+  homePgAnchor String @default("halaman")
+  /// Tampilkan seksi kartu halaman HTML di beranda.
+  homePgEnabled Boolean @default(true)
+
+  // Seksi keunggulan
+  homeBenefitsTag    String @default("Keunggulan")
+  homeBenefitsTitle  String @default("Kenapa Pilih")
+  homeBenefitsAccent String @default("Holiday Banyuwangi?")
+  homeBenefitsSuffix String @default("")
+  homeBenefitsDesc   String @default("")
+  /// Tampilkan seksi keunggulan di beranda.
+  homeBenefitsEnabled Boolean @default(true)
+
+  // Seksi galeri pengunjung (opsional, dikelola dari editor Beranda)
+  homeGalleryTag    String  @default("Galeri")
+  homeGalleryTitle  String  @default("Momen")
+  homeGalleryAccent String  @default("Pengunjung")
+  homeGallerySuffix String  @default("")
+  homeGalleryDesc   String  @default("")
+  homeGalleryAnchor String  @default("galeri")
+  /// Kolom grid galeri pengunjung di desktop.
+  homeGalleryColumns Int    @default(4)
+  /// Tampilkan seksi galeri pengunjung di beranda.
+  homeGalleryEnabled Boolean @default(true)
+
+  // Seksi feed Instagram (di bawah testimoni)
+  homeIgTag    String @default("Instagram")
+  homeIgTitle  String @default("Follow kami di")
+  homeIgAccent String @default("Instagram")
+  homeIgSuffix String @default("")
+  /// Teks di samping logo pada baris brand seksi Instagram.
+  homeIgDesc   String @default("Intip keseruan trip, promo, dan cerita traveler lainnya langsung dari Instagram kami.")
+  /// Tampilkan seksi feed Instagram di beranda.
+  homeIgEnabled Boolean @default(true)
+
+  // Seksi testimoni
+  homeTestiTag    String @default("Testimoni")
+  homeTestiTitle  String @default("Apa Kata")
+  homeTestiAccent String @default("Mereka?")
+  homeTestiSuffix String @default("")
+  homeTestiDesc   String @default("")
+  /// Tampilkan seksi testimoni di beranda.
+  homeTestiEnabled Boolean @default(true)
+
+  // CTA banner
+  ctaTitle   String @default("Yuk, Rencanakan Liburanmu ke Banyuwangi! 🌴🔥")
+  ctaText    String @default("Chat kami sekarang buat rekomendasi paket sesuai waktu & budget kamu!")
+  ctaLabel   String @default("💬 Chat & Konsultasi Sekarang")
+  ctaMessage String @default("Hai Holiday Banyuwangi, aku mau tanya rekomendasi paket trip")
+  /// Nomor WhatsApp khusus tombol banner CTA (berlaku global). Kosong = waNumber.
+  ctaWaNumber String @default("")
+  /// Sapaan otomatis khusus tombol banner CTA (berlaku global). Kosong = waGreeting.
+  ctaWaGreeting String @default("")
+  /// Link rotator untuk tombol banner CTA (berlaku global). Kosong = wa.me.
+  ctaWaLink   String @default("")
+
+  /// Foto latar banner CTA (berlaku untuk semua halaman). Kosong = gradasi hijau.
+  ctaBackground String?
+
+  // Penanda versi konten global: dinaikkan setiap ada penyimpanan dari panel
+  // admin, lalu dibaca halaman publik untuk auto-refresh tanpa reload manual.
+  contentVersion Int @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+/// Satu postingan Instagram, diisi otomatis dari Meta Graph API
+/// (`{ig-user-id}/media`). Panel admin tidak menyunting baris ini — isinya
+/// murni hasil sinkronisasi `src/lib/instagram-feed.ts`.
+model InstagramPost {
+  id       String @id @default(cuid())
+  /// Id postingan di Instagram (`media.id`), unik supaya sinkronisasi bisa upsert.
+  igId     String @unique
+  caption  String @default("")
+  /// IMAGE | VIDEO | CAROUSEL_ALBUM.
+  mediaType String @default("IMAGE")
+  /// URL media dari Graph API. Untuk VIDEO nilainya bisa kedaluwarsa (±24 jam),
+  /// jadi sinkronisasi berjalan rutin selama situs dikunjungi.
+  mediaUrl       String?
+  /// Cadangan thumbnail untuk VIDEO (dipakai kalau `mediaUrl` sudah basi).
+  thumbnailUrl   String?
+  permalink      String
+  /// Waktu posting di Instagram; penampilan mengurutkan dari yang terbaru.
+  takenAt        DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Halaman mandiri berisi dokumen HTML utuh yang ditempel admin.
+/// Dirender apa adanya oleh route `/halaman/[slug]` — tanpa layout situs.
+model HtmlPage {
+  id    String @id @default(cuid())
+  /// Alamat publik `/halaman/<slug>`; unik supaya dua halaman tidak berebut.
+  slug  String @unique
+  title String
+  /// Dokumen HTML apa adanya. Boleh `<html>…</html>` utuh atau fragmen.
+  /// Halaman sosmed tidak lagi memakainya (lihat `bio`) dan dibiarkan kosong.
+  html  String @default("")
+
+  /// Kelompok halaman: "page" (menu Halaman) atau "sosmed" (link bio Instagram
+  /// / TikTok, menu Sosmed). Halaman sosmed dirender di `/bio/<slug>`.
+  scope String @default("page")
+
+  /// Konten terstruktur halaman link-bio (scope "sosmed"), bentuknya
+  /// `BioLinkPageData` di `@/lib/bio`. Dirender komponen native `<BioLinkPage>`
+  /// di `/bio/<slug>` — bukan dokumen HTML lagi. `null` untuk halaman "page".
+  bio Json?
+
+  /// Tampilkan kartu redirect di halaman beranda.
+  showOnHome Boolean @default(false)
+  /// Slug kategori yang menampilkan kartu ini. Kosong = tidak tampil di
+  /// kategori mana pun; isi beberapa slug untuk tampil di beberapa kategori.
+  categorySlugs String[] @default([])
+
+  /// Gambar kartu (opsional, dari galeri); alt diturunkan dari judul.
+  cardImage String?
+  /// Label kecil di atas judul kartu (mis. "Panduan", "Promo").
+  cardTag String @default("")
+  /// Judul kartu; kosong berarti memakai `title` halaman.
+  cardTitle String @default("")
+  cardDesc  String @default("")
+  /// Teks tombol di kartu; kosong = tombol tidak dirender.
+  cardButtonLabel String @default("")
+
+  isPublished Boolean @default(true)
+  /// Urutan kartu di halaman beranda/kategori.
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Konten halaman beranda yang bukan relasional (kartu & testimoni tetap relasional)
+model HomeStat {
+  id    String @id @default(cuid())
+  num   String
+  label String
+  order Int    @default(0)
+}
+
+model Testimonial {
+  id       String @id @default(cuid())
+  stars    Int    @default(5)
+  quote    String
+  author   String
+  location String
+  order    Int    @default(0)
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  navLabel    String
+  kind        TripKind
+  duration    String   @default("")
+  order       Int      @default(0)
+  showInNav   Boolean  @default(true)
+  isPublished Boolean  @default(true)
+
+  heroBadges         String[]
+  heroTitle          String
+  heroAccent         String   @default("")
+  heroSuffix         String   @default("")
+  heroDescription    String
+  heroDecos          String[]
+  /// Latar cinematic belakang hero kategori.
+  ///
+  /// Dulu halaman ini memakai foto paket pertama, jadi dua kategori dengan foto
+  /// pertama yang sama (mis. Gili Ijen dan Gili Ijen 3D2N) tampil dengan
+  /// background identik. Field ini melepas background dari isi paket: tiap
+  /// kategori bisa punya foto sendiri yang disetel dari galeri, dan kalau
+  /// kosong renderer publik jatuh ke foto paket pertama seperti sebelumnya —
+  /// jadi konten lama tidak ikut berubah.
+  heroImage    String?
+  heroImageAlt String?
+  ctaPrimaryLabel    String   @default("💬 Tanya via WhatsApp")
+  ctaSecondaryLabel  String   @default("📦 Lihat Pilihan Paket")
+  ctaSecondaryAnchor String   @default("#paket")
+  /// Link rotator untuk tombol WhatsApp utama hero halaman ini. Kosong = wa.me.
+  heroWaLink          String   @default("")
+  ctaTitle           String   @default("")
+  ctaText            String   @default("")
+  ctaLabel           String   @default("💬 Chat & Booking Sekarang")
+  ctaMessage         String   @default("")
+  /// Nomor WhatsApp khusus banner CTA halaman ini. Kosong = waNumber halaman/global.
+  ctaWaNumber        String   @default("")
+  /// Sapaan otomatis khusus banner CTA halaman ini. Kosong = waGreeting halaman/global.
+  ctaWaGreeting      String   @default("")
+  /// Link rotator untuk tombol banner CTA halaman ini. Kosong = wa.me.
+  ctaWaLink           String   @default("")
+
+  /// Foto latar banner CTA halaman ini. Kosong = foto global (SiteSettings.ctaBackground).
+  ctaBackground String?
+
+  // WhatsApp khusus halaman kategori ini. Semua kosong = memakai pengaturan global.
+  waNumber   String @default("")
+  waGreeting String @default("")
+  waMessage  String @default("")
+
+  listingTag         String  @default("Pilihan Paket")
+  listingTitle       String  @default("Pilih")
+  listingAccent      String  @default("Itinerary")
+  listingSuffix      String  @default("Favoritmu")
+  listingDescription String
+  listingAnchor      String  @default("paket")
+  listingNoteIcon    String?
+  listingNoteText    String?
+
+  /// Jumlah kolom grid listing di desktop, mis. 3 untuk Open Trip,
+  /// 2 untuk halaman 3D2N. Diambil dari CSS asli halaman tersebut.
+  gridColumns Int @default(3)
+
+  // Judul seksi keunggulan kategori
+  benefitsTag         String @default("")
+  benefitsTitle       String @default("")
+  benefitsAccent      String @default("")
+  benefitsSuffix      String @default("")
+  benefitsDescription String @default("")
+
+  // Kepala seksi kartu tautan halaman HTML di halaman kategori
+  // (`/admin/halaman`, scope `page`). Kartunya sendiri dipilih dari editor
+  // tiap halaman; field ini hanya mengatur teks kepalanya.
+  pgAnchor String @default("halaman")
+  pgTag    String @default("")
+  pgTitle  String @default("")
+  pgAccent String @default("")
+  pgSuffix String @default("")
+  pgDesc   String @default("")
+
+  // Kartu pada beranda
+  cardIcon        String @default("")
+  cardDescription String @default("")
+  cardPrice       String @default("")
+  cardLinkLabel   String @default("")
+  /// Gambar kartu kategori, opsional.
+  ///
+  /// Diisi dari galeri lewat editor admin. NULL untuk kategori bawaan impor,
+  /// dan renderer publik hanya membuat elemen gambar kalau nilainya ada — jadi
+  /// markup halaman yang sudah tervalidasi tidak berubah sama sekali.
+  cardImage    String?
+  cardImageAlt String?
+
+  benefits Benefit[]
+  packages Package[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Keunggulan — bisa milik homepage (categoryId null + isHomepage true) atau sebuah kategori
+model Benefit {
+  id          String    @id @default(cuid())
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isHomepage  Boolean   @default(false)
+  icon        String
+  title       String
+  description String
+  order       Int       @default(0)
+}
+
+model Package {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  kind          TripKind
+  isPublished   Boolean  @default(true)
+  hasDetailPage Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+  showOnHome    Boolean  @default(false)
+  order         Int      @default(0)
+
+  // Kartu ringkas (dipakai di listing kategori & beranda)
+  cardImage       String?
+  cardImageAlt    String?
+  cardLoc         String?
+  // Label lokasi versi beranda. Di markup legacy, kartu beranda memakai
+  // label yang lebih umum ("Rute Kombinasi") sementara kartu di halaman
+  // kategori memakai nama lokasi spesifik ("Green Island").
+  cardHomeLoc     String?
+  cardTag         String?
+  cardRating      String?
+  cardHighlight   String?
+  cardFacilities  FacilityPill[]
+  cardPriceLabel  String?
+  cardPriceValue  String?
+  cardPriceUnit   String?
+  cardButtonLabel String?
+  /// Link rotator untuk tombol kartu saat mode kartu = WhatsApp. Kosong = wa.me.
+  cardWaLink      String?
+  cardLinkMode    String         @default("detail") // "detail" | "whatsapp"
+  cardVariant     String         @default("default") // "default" | "opentrip"
+  cardDays        CardDay[]
+  cardPrices      CardPrice[]
+
+  // Hero
+  heroBadges         String[]
+  heroTitle          String
+  heroAccent         String   @default("")
+  heroSuffix         String   @default("")
+  heroDescription    String
+  heroDecos          String[]
+  /// Latar cinematic belakang hero paket.
+  ///
+  /// Dulu hero paket memakai foto galeri pertama, jadi paket yang galerinya
+  /// diurutkan ulang bisa berganti latar tanpa sengaja. Field ini melepas
+  /// latar dari isi galeri: tiap paket bisa punya foto sendiri yang disetel
+  /// dari galeri, dan kalau kosong renderer publik jatuh ke foto galeri
+  /// pertama seperti sebelumnya — jadi konten lama tidak ikut berubah.
+  heroImage    String?
+  heroImageAlt String?
+  ctaPrimaryLabel    String   @default("💬 Booking via WhatsApp")
+  ctaSecondaryLabel  String   @default("📋 Lihat Itinerary")
+  ctaSecondaryAnchor String   @default("#itinerary")
+  /// Link rotator untuk tombol WhatsApp utama hero paket ini. Kosong = wa.me.
+  heroWaLink         String   @default("")
+  ctaTitle           String   @default("")
+  ctaText            String   @default("")
+  ctaLabel           String   @default("💬 Chat & Booking Sekarang")
+  ctaMessage         String   @default("")
+  /// Nomor WhatsApp khusus banner CTA paket ini. Kosong = waNumber paket/global.
+  ctaWaNumber        String   @default("")
+  /// Sapaan otomatis khusus banner CTA paket ini. Kosong = waGreeting paket/global.
+  ctaWaGreeting      String   @default("")
+  /// Link rotator untuk tombol banner CTA paket ini. Kosong = wa.me.
+  ctaWaLink          String   @default("")
+
+  /// Foto latar banner CTA halaman ini. Kosong = foto global (SiteSettings.ctaBackground).
+  ctaBackground String?
+  waMessage          String   @default("")
+  // WhatsApp khusus paket ini. Kosong = memakai pengaturan global.
+  waNumber   String @default("")
+  waGreeting String @default("")
+
+  // Seksi
+  jadwalTag         String @default("Jadwal")
+  jadwalTitle       String @default("Jadwal")
+  jadwalAccent      String @default("Keberangkatan")
+  jadwalSuffix      String @default("")
+  jadwalDescription String @default("")
+  jadwalAnchor      String @default("jadwal")
+
+  itineraryTag         String @default("Itinerary")
+  itineraryTitle       String @default("Day by Day,")
+  itineraryAccent      String @default("No Boring Moments")
+  itinerarySuffix      String @default("")
+  itineraryDescription String @default("")
+  itineraryAnchor      String @default("itinerary")
+  /// Jumlah kolom kartu itinerary di desktop (1, 2, atau 3).
+  itineraryColumns     Int    @default(1)
+
+  facilityTag         String @default("Fasilitas")
+  facilityTitle       String @default("Udah Termasuk")
+  facilityAccent      String @default("Apa Aja?")
+  facilitySuffix      String @default("")
+  facilityDescription String @default("")
+
+  pricingTag         String @default("Harga Paket")
+  pricingTitle       String @default("Pilih Sesuai")
+  pricingAccent      String @default("Jumlah Squad")
+  pricingSuffix      String @default("")
+  pricingDescription String @default("")
+
+  galleryTag         String  @default("Galeri")
+  galleryTitle       String  @default("Intip")
+  galleryAccent      String  @default("Keseruannya")
+  gallerySuffix      String  @default("")
+  galleryDescription String  @default("")
+  galleryHasMore     Boolean @default(false)
+  galleryMoreLabel   String  @default("Lihat Selengkapnya")
+  /// Jumlah kolom galeri di desktop. Halaman Djawatan asli memakai 2 kolom.
+  galleryColumns     Int     @default(3)
+
+  images     String[]
+  schedule   PackageSchedule[]
+  itinerary  ItineraryDay[]
+  facilities FacilityGroup[]
+  pricing    Pricing?
+  gallery    GalleryImage[]
+  notes      PackageNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Baris "Day 1: ..." pada kartu paket
+model CardDay {
+  id        String  @id @default(cuid())
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  label     String
+  title     String
+  order     Int     @default(0)
+}
+
+/// Baris harga pada kartu paket. Kartu Open Trip bisa punya lebih dari satu,
+/// misalnya "Weekend" dan "Weekday".
+model CardPrice {
+  id        String  @id @default(cuid())
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  unit      String?
+  order     Int     @default(0)
+}
+
+/// Pill fasilitas pada kartu open trip
+model FacilityPill {
+  id        String  @id @default(cuid())
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int     @default(0)
+}
+
+/// Satu baris jadwal keberangkatan pada halaman detail paket
+/// (tanggal + bulan + tahun + deskripsi), dirender di atas itinerary.
+model PackageSchedule {
+  id          String  @id @default(cuid())
+  packageId   String
+  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  /// Tanggal (1-31).
+  day         Int
+  /// Nama bulan tampilan, mis. "Oktober".
+  month       String
+  /// Tahun, mis. 2026.
+  year        Int
+  description String  @default("")
+  order       Int     @default(0)
+}
+
+model ItineraryDay {
+  id        String         @id @default(cuid())
+  packageId String
+  package   Package        @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  emoji     String         @default("🌴")
+  label     String
+  title     String
+  order     Int            @default(0)
+  items     TimelineItem[]
+}
+
+model TimelineItem {
+  id    String       @id @default(cuid())
+  dayId String
+  day   ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  time  String
+  text  String
+  order Int          @default(0)
+}
+
+model FacilityGroup {
+  id        String          @id @default(cuid())
+  packageId String
+  package   Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  variant   FacilityVariant
+  title     String
+  order     Int             @default(0)
+  items     FacilityItem[]
+}
+
+model FacilityItem {
+  id      String        @id @default(cuid())
+  groupId String
+  group   FacilityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  icon    String
+  text    String
+  order   Int           @default(0)
+}
+
+model Pricing {
+  id             String        @id @default(cuid())
+  packageId      String        @unique
+  package        Package       @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  kind           PricingKind   @default(TABLE)
+  note           String?
+  /// Label kolom pertama pada tabel harga, mis. "Jumlah Peserta"
+  rowHeaderLabel String?
+  columns        PriceColumn[]
+  rows           PriceRow[]
+  items          PriceItem[]
+}
+
+model PriceColumn {
+  id          String       @id @default(cuid())
+  pricingId   String
+  pricing     Pricing      @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+  label       String
+  cssClass    String?
+  order       Int          @default(0)
+  priceValues PriceValue[]
+}
+
+model PriceRow {
+  id        String       @id @default(cuid())
+  pricingId String
+  pricing   Pricing      @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int          @default(0)
+  values    PriceValue[]
+}
+
+model PriceValue {
+  id       String      @id @default(cuid())
+  rowId    String
+  row      PriceRow    @relation(fields: [rowId], references: [id], onDelete: Cascade)
+  columnId String
+  column   PriceColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  value    String
+
+  @@unique([rowId, columnId])
+}
+
+model PriceItem {
+  id        String  @id @default(cuid())
+  pricingId String
+  pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  unit      String?
+  order     Int     @default(0)
+}
+
+model GalleryImage {
+  id        String  @id @default(cuid())
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String  @default("")
+  order     Int     @default(0)
+}
+
+/// Foto untuk seksi "Galeri Pengunjung" di beranda, dikelola dari editor
+/// Beranda (`/admin/kategori/beranda`). Tidak terikat paket mana pun.
+model HomeGalleryImage {
+  id    String @id @default(cuid())
+  url   String
+  alt   String @default("")
+  order Int    @default(0)
+}
+
+model PackageNote {
+  id        String  @id @default(cuid())
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  icon      String  @default("ℹ️")
+  text      String
+  order     Int     @default(0)
+}
+
+model MediaAsset {
+  id       String @id @default(cuid())
+  filename String
+  url      String
+  mime     String
+  size     Int
+  width    Int?
+  height   Int?
+  alt      String   @default("")
+  folder   String   @default("uploads")
+  createdAt DateTime @default(now())
+
+  /// Aset asal kalau ini hasil crop/zoom dari editor gambar.
+  ///
+  /// Crop tidak pernah menimpa file aslinya karena R2 tidak punya versioning,
+  /// jadi hasil selalu disimpan sebagai baris baru. Relasi ini supaya admin
+  /// bisa melihat asal-usulnya dan artefak bisa dibersihkan.
+  derivedFromId String?
+  derivedFrom   MediaAsset?  @relation("AssetDerivations", fields: [derivedFromId], references: [id], onDelete: SetNull)
+  derivations   MediaAsset[] @relation("AssetDerivations")
+
+  @@index([derivedFromId])
+}
+
+model AdminUser {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  passwordHash      String
+  role              String   @default("admin")
+  passwordChangedAt DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

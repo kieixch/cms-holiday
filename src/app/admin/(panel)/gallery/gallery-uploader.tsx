@@ -1,0 +1,297 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+
+type Uploaded = { id: string; url: string; filename: string };
+type Failure = { name: string; error: string };
+type Note = { kind: "ok" | "error"; text: string };
+
+/** Satu file yang dipilih, dengan object URL untuk pratinjau lokal. */
+type Picked = { file: File; preview: string; width: number | null; height: number | null };
+
+/**
+ * Form upload galeri.
+ *
+ * Pakai XHR, bukan `fetch`, karena `fetch` tidak punya event progress upload —
+ * tanpa ini user tidak melihat apa-apa selama foto 8 MB naik di koneksi seluler
+ * dan cenderung menekan tombol dua kali.
+ */
+export function GalleryUploader({ folders }: { folders: string[] }) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [folder, setFolder] = useState("");
+  const [alt, setAlt] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [percent, setPercent] = useState<number | null>(null);
+  const [message, setMessage] = useState<Note | null>(null);
+  const [picked, setPicked] = useState<Picked[]>([]);
+
+  // Object URL dipakai untuk pratinjau sebelum file diunggah. Kalau tidak
+  // dicabut, setiap pemilihan gambar menahan salinan file penuh di memori
+  // sampai tab ditutup.
+  //
+  // Pencabutan dilakukan eksplisit di setiap tempat item dibuang (lihat
+  // `clearPicked` dan tombol "Buang"). Efek di sini hanya membersihkan sisa
+  // saat komponen dilepas. Kalau cleanup bergantung pada `picked`, satu
+  // pencabutan akan ikut mengenai item yang masih tampil karena closure
+  // effect lama masih memegang array sebelumnya.
+  const pickedRef = useRef<Picked[]>([]);
+
+  useEffect(() => {
+    // Disinkronkan di dalam efek, bukan saat render: React membolehkan menulis
+    // ref di efek, dan cleanup unmount jadi selalu melihat daftar terbaru.
+    pickedRef.current = picked;
+  }, [picked]);
+
+  useEffect(() => {
+    return () => {
+      for (const item of pickedRef.current) URL.revokeObjectURL(item.preview);
+    };
+  }, []);
+
+  function reset() {
+    setBusy(false);
+    setPercent(null);
+    setMessage(null);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  function clearPicked() {
+    for (const item of picked) URL.revokeObjectURL(item.preview);
+    setPicked([]);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  /** Baca dimensi lewat `Image` supaya admin tahu resolusi sebelum mengunggah. */
+  function readDimensions(file: File): Promise<{ width: number; height: number } | null> {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new window.Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+
+  async function onPickFiles() {
+    const files = Array.from(inputRef.current?.files ?? []);
+    if (files.length === 0) {
+      setPicked([]);
+      return;
+    }
+
+    for (const item of picked) URL.revokeObjectURL(item.preview);
+
+    const next: Picked[] = await Promise.all(
+      files.map(async (file) => {
+        const size = await readDimensions(file);
+        return {
+          file,
+          preview: URL.createObjectURL(file),
+          width: size?.width ?? null,
+          height: size?.height ?? null,
+        };
+      }),
+    );
+    setPicked(next);
+  }
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (picked.length === 0) {
+      setMessage({ kind: "error", text: "Pilih minimal satu foto dulu." });
+      return;
+    }
+
+    const body = new FormData();
+    for (const item of picked) body.append("file", item.file);
+    if (folder) body.append("folder", folder);
+    if (alt.trim()) body.append("alt", alt.trim());
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/admin/gallery");
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) setPercent(Math.round((e.loaded / e.total) * 100));
+    });
+
+    xhr.addEventListener("load", () => {
+      let payload: { saved?: Uploaded[]; failures?: Failure[]; error?: string } = {};
+      try {
+        payload = JSON.parse(xhr.responseText);
+      } catch {
+        payload = { error: "Respons server tidak bisa dibaca." };
+      }
+
+      if (payload.saved?.length) {
+        const parts = [`${payload.saved.length} foto diunggah`];
+        if (payload.failures?.length) {
+          parts.push(`${payload.failures.length} gagal: ${payload.failures[0].error}`);
+        }
+        setMessage({
+          kind: payload.failures?.length ? "error" : "ok",
+          text: `${parts.join(". ")}.`,
+        });
+        setAlt("");
+        clearPicked();
+        router.refresh();
+        setBusy(false);
+        setPercent(null);
+        return;
+      }
+
+      setMessage({ kind: "error", text: payload.error ?? "Upload gagal." });
+      reset();
+    });
+
+    xhr.addEventListener("error", () => {
+      setMessage({ kind: "error", text: "Koneksi terputus saat upload." });
+      reset();
+    });
+
+    setBusy(true);
+    setMessage(null);
+    setPercent(0);
+    xhr.send(body);
+  }
+
+  const totalBytes = picked.reduce((sum, item) => sum + item.file.size, 0);
+
+  return (
+    <form className="admin-card admin-media-upload" onSubmit={onSubmit}>
+      <div className="admin-media-upload__row">
+        <label className="admin-field">
+          <span className="admin-field__label">Foto (boleh pilih banyak)</span>
+          <input
+            ref={inputRef}
+            className="admin-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+            multiple
+            required
+            disabled={busy}
+            onChange={onPickFiles}
+          />
+        </label>
+
+        <label className="admin-field">
+          <span className="admin-field__label">Folder</span>
+          <input
+            className="admin-input"
+            list="gallery-folders"
+            value={folder}
+            onChange={(e) => setFolder(e.target.value)}
+            placeholder="e.g. paket-3d2n"
+            disabled={busy}
+          />
+          <datalist id="gallery-folders">
+            {folders.map((f) => (
+              <option key={f} value={f} />
+            ))}
+          </datalist>
+        </label>
+
+        <label className="admin-field">
+          <span className="admin-field__label">Teks alternatif</span>
+          <input
+            className="admin-input"
+            value={alt}
+            onChange={(e) => setAlt(e.target.value)}
+            placeholder="Deskripsi singkat untuk semua foto ini"
+            disabled={busy}
+          />
+        </label>
+      </div>
+
+      {picked.length > 0 ? (
+        <div className="admin-picked">
+          <p className="admin-picked__head">
+            {picked.length} foto dipilih · {kb(totalBytes)}
+            <button type="button" className="admin-btn admin-btn--small admin-btn--ghost" onClick={clearPicked} disabled={busy}>
+              Batalkan pilihan
+            </button>
+          </p>
+          <ul className="admin-picked__grid">
+            {picked.map((item, index) => (
+              <li key={item.preview} className="admin-picked__item">
+                {/* Blob lokal, bukan next/image: URL-nya dibuat runtime dan
+                    tidak akan lolos optimizer Next. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.preview}
+                  alt={`Pratinjau ${item.file.name}`}
+                  className="admin-picked__img"
+                />
+                <p className="admin-picked__name" title={item.file.name}>
+                  {item.file.name}
+                </p>
+                <p className="admin-picked__meta">
+                  {item.width && item.height ? `${item.width}×${item.height}` : "—"} ·{" "}
+                  {kb(item.file.size)}
+                </p>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--small admin-btn--danger"
+                  disabled={busy}
+                  onClick={() => {
+                    URL.revokeObjectURL(item.preview);
+                    const files = picked.filter((_, i) => i !== index);
+                    setPicked(files);
+                    if (inputRef.current) {
+                      const transfer = new DataTransfer();
+                      for (const f of files) transfer.items.add(f.file);
+                      inputRef.current.files = transfer.files;
+                    }
+                  }}
+                >
+                  Buang
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {percent !== null && (
+        <div
+          className="admin-progress"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div className="admin-progress__bar" style={{ width: `${percent}%` }} />
+          <span className="admin-progress__label">{percent}%</span>
+        </div>
+      )}
+
+      <div className="admin-media-upload__actions">
+        <button type="submit" className="admin-btn" disabled={busy || picked.length === 0}>
+          {busy ? "Mengunggah…" : `Unggah ${picked.length > 0 ? `${picked.length} foto` : ""}`}
+        </button>
+        <p className="admin-hint">
+          Otomatis diperkecil dan dikonversi ke WebP. SVG ditolak karena bisa jadi celah XSS.
+        </p>
+      </div>
+
+      {message && (
+        <p className={message.kind === "ok" ? "admin-alert admin-alert--ok" : "admin-alert admin-alert--error"}>
+          {message.text}
+        </p>
+      )}
+    </form>
+  );
+}
+
+function kb(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}

@@ -1,0 +1,2443 @@
+/* ---------------------------------------------------------------------------
+ * REDESIGN GLOBEON-INSPIRED — Holiday Banyuwangi
+ *
+ * Lapisan override di atas src/styles/legacy.css (hasil migrasi WordPress, yang
+ * tidak boleh diedit manual karena di-generate scripts/merge-css.mjs). Dimuat
+ * SETELAH legacy.css di src/app/globals.css, jadi pada spesifisitas yang sama
+ * aturan di bawah menang.
+ *
+ * Sesuai DESIGN.md:
+ *   - Palet hijau tua natural (#163C32) sebagai identitas, rumah di #FAFAF7
+ *     hangat; hijau DOMINAN sebagai aksen, bukan menenggelamkan halaman.
+ *   - Tipografi editorial: Inter untuk isi, Baloo 2 untuk judul hero + judul
+ *     section, DM Serif Display hanya untuk judul CTA banner.
+ *   - Tombol solid radius 8-12px (bukan pill semua), kartu ringan 1px #E1E6E2.
+ *   - Anti AI-slop: tanpa glow gradient warna-warni, tanpa kaca (glassmorphism),
+ *     tanpa emoji dekoratif via CSS pseudoelement.
+ *
+ * Nilai yang sengaja dipertahankan dari keputusan sebelumnya:
+ *   - Bintang rating (package-rating, testimonial .stars) tetap ORANYE #FF9F1C.
+ *   - Kartu "Tidak Termasuk" (fas-card.exclude) tetap kemerahan karena itu
+ *     penanda semantik negatif, bukan dekorasi.
+ *   - Tombol WhatsApp melayang (.sticky-wa) tetap hijau resmi WhatsApp.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  /* Palet resmi DESIGN.md */
+  --hb-primary: #163c32; /* Deep Green — tombol, judul penting, footer */
+  --hb-forest: #245447; /* Secondary Forest Green — hover, aksen */
+  --hb-natural: #3f705d; /* Natural Green — highlight, dipakai hemat */
+  --hb-sage: #dde8e1; /* Soft Sage — bg lembut, badge halus */
+  --hb-light: #f1f6f3; /* Very Light Green — area konten subtil */
+  --hb-soft-green: #dcefe2; /* Hijau muda lembut — pita seksi, teks tetap gelap */
+  --hb-bg: #fafaf7; /* Primary Background — putih hangat */
+  --hb-white: #ffffff;
+  --hb-ink: #17201d; /* Primary Text */
+  --hb-ink-2: #66716c; /* Secondary Text */
+  --hb-border: #e1e6e2;
+  /* Warna khusus yang sengaja dipertahankan */
+  --hb-rating: #ff9f1c; /* hanya untuk rating */
+  --hb-wa: #25d366; /* identitas tombol chat WhatsApp */
+  --hb-wa-2: #1aa84a;
+
+  /* Font: Inter untuk isi (alias --font-poppins dari legacy, dipakai admin.css
+     dan body lama), Baloo 2 (weight 600/700/800) untuk judul hero + judul
+     section, DM Serif Display hanya untuk CTA banner. Heading legacy yang
+     memakai var(--font-baloo-2) diarahkan ulang satu per satu di bawah
+     supaya hasilnya deterministik. */
+  --font-poppins: var(--font-inter);
+}
+
+/* ===== BASE ===== */
+.hb2d1n {
+  background: var(--hb-bg);
+  color: var(--hb-ink);
+  font-family: var(--font-inter), sans-serif;
+  line-height: 1.65;
+}
+.hb2d1n .container {
+  max-width: 1200px;
+  padding: 0 32px;
+}
+
+/* ===== SPACING SEKSI ===== */
+.hb2d1n .section {
+  /* Hanya padding vertikal. Padding horizontal dibiarkan milik `.container`,
+     supaya `section.section.container` tidak kehilangan sisi kiri-kanannya
+     (dulu `padding: 96px 0` menimpa `padding: 0 32px` dari `.container`). */
+  padding-block: 96px;
+  scroll-margin-top: 88px;
+}
+
+/* ===== HEADER ===== */
+/* `.hb2d1n` bawaan memakai `overflow-x: hidden`, yang membuat
+   `position: sticky` pada header mati (hidden = scroll-container baru).
+   `clip` memotong sama persis tapi tanpa jadi scroll-container,
+   sehingga header benar-benar menempel saat digulir. */
+.hb2d1n {
+  overflow-x: clip;
+}
+.hb2d1n {
+  /* Tinggi navbar, dipakai hero bergaya full-bleed untuk menembus ke baliknya. */
+  --hb-header-h: 72px;
+}
+.hb2d1n .site-header {
+  min-height: var(--hb-header-h);
+  background: var(--hb-bg);
+  backdrop-filter: none;
+  border-bottom: none;
+  transition:
+    background 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+.hb2d1n .header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 32px;
+  gap: 24px;
+}
+.hb2d1n .main-nav a {
+  color: var(--hb-ink);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+.hb2d1n .main-nav a:hover {
+  color: var(--hb-forest);
+}
+.hb2d1n .menu-toggle {
+  background: var(--hb-sage);
+  color: var(--hb-primary);
+  border-radius: 10px;
+}
+
+/* Navbar mengambang di atas hero full-bleed.
+   Di halaman yang benar-benar punya hero (`:has`), latar navbar dibuat
+   transparan (dengan selubung gelap tipis agar teks terang tetap terbaca di
+   segala foto) sehingga gambar hero menembus sampai tepi atas layar — tidak
+   lagi "terpotong" oleh bilah navbar. Begitu digulir, navbar kembali menjadi
+   warm-white bergaya terang seperti sebelumnya. */
+.hb2d1n:has(section.hbgl-hero-bleed) .site-header {
+  background: linear-gradient(180deg, rgba(8, 24, 19, 0.5), rgba(8, 24, 19, 0));
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+}
+.hb2d1n:has(section.hbgl-hero-bleed) .main-nav a {
+  color: rgba(255, 255, 255, 0.92);
+}
+.hb2d1n:has(section.hbgl-hero-bleed) .main-nav a:hover {
+  color: var(--hb-white);
+}
+.hb2d1n:has(section.hbgl-hero-bleed) .site-header .brand-logo-wrap svg text:first-of-type {
+  fill: var(--hb-white);
+}
+.hb2d1n:has(section.hbgl-hero-bleed) .site-header .brand-logo-wrap svg text:last-of-type {
+  fill: rgba(255, 255, 255, 0.75);
+}
+html.hbgl-scrolled .hb2d1n:has(section.hbgl-hero-bleed) .site-header {
+  background: rgba(250, 250, 247, 0.92);
+  box-shadow: 0 8px 30px -18px rgba(22, 60, 50, 0.32);
+  border-bottom-color: transparent;
+  backdrop-filter: blur(6px);
+}
+html.hbgl-scrolled .hb2d1n:has(section.hbgl-hero-bleed) .main-nav a {
+  color: var(--hb-ink);
+}
+html.hbgl-scrolled .hb2d1n:has(section.hbgl-hero-bleed) .main-nav a:hover {
+  color: var(--hb-forest);
+}
+html.hbgl-scrolled .hb2d1n:has(section.hbgl-hero-bleed) .site-header .brand-logo-wrap svg text:first-of-type {
+  fill: #163c32;
+}
+html.hbgl-scrolled .hb2d1n:has(section.hbgl-hero-bleed) .site-header .brand-logo-wrap svg text:last-of-type {
+  fill: #245447;
+}
+
+/* ===== HERO ===== */
+.hb2d1n .hero,
+.hb2d1n--home .hero {
+  border-radius: 24px;
+  background: linear-gradient(150deg, var(--hb-light), var(--hb-sage));
+  margin: 24px auto;
+  padding: 80px 40px;
+}
+.hb2d1n .hero::before {
+  background: radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.5), transparent 45%);
+}
+.hb2d1n .hero h1,
+.hb2d1n--home .hero h1 {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 800;
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--hb-primary);
+  text-shadow: none;
+}
+.hb2d1n .hero h1 span {
+  color: var(--hb-natural);
+  -webkit-text-stroke: 0;
+}
+.hb2d1n .hero p,
+.hb2d1n--home .hero p {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--hb-ink-2);
+  opacity: 1;
+  max-width: 620px;
+}
+.hb2d1n .badge {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--hb-border);
+  backdrop-filter: none;
+  color: var(--hb-forest);
+  font-weight: 600;
+  border-radius: 999px;
+}
+.hb2d1n .stats-bar {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--hb-border);
+  backdrop-filter: none;
+  border-radius: 14px;
+  padding: 16px 28px;
+  gap: 40px;
+}
+.hb2d1n .stat-item .num {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--hb-primary);
+  text-shadow: none;
+}
+.hb2d1n .stat-item .lbl {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--hb-ink-2);
+  opacity: 1;
+}
+
+/* ===== HERO CINEMATIC (gambar latar) ===== */
+.hb2d1n .hero.hbgl-hero--media {
+  position: relative;
+  min-height: 520px;
+  padding: 64px 72px;
+  margin: 24px auto 0;
+  overflow: hidden;
+  text-align: left;
+  background: linear-gradient(160deg, var(--hb-primary), var(--hb-forest));
+  display: flex;
+  align-items: center;
+}
+.hb2d1n .hero.hbgl-hero--media::before {
+  display: none;
+}
+.hb2d1n .hero.hbgl-hero--media .hbgl-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.hb2d1n .hero.hbgl-hero--media .hbgl-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hb2d1n .hero.hbgl-hero--media .hbgl-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(10, 30, 24, 0.92) 8%,
+    rgba(10, 30, 24, 0.72) 38%,
+    rgba(10, 30, 24, 0.28) 68%,
+    rgba(10, 30, 24, 0.12) 100%
+  );
+}
+.hb2d1n .hero.hbgl-hero--media .hero-content {
+  z-index: 2;
+  max-width: 640px;
+  text-align: left;
+}
+.hb2d1n .hero.hbgl-hero--media .hero-badges {
+  justify-content: flex-start;
+}
+.hb2d1n .hero.hbgl-hero--media .badge {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--hb-sage);
+}
+.hb2d1n .hero.hbgl-hero--media h1 {
+  color: var(--hb-white);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+}
+.hb2d1n .hero.hbgl-hero--media h1 span {
+  color: #bfe6d4;
+}
+.hb2d1n .hero.hbgl-hero--media p {
+  color: rgba(255, 255, 255, 0.88);
+}
+.hb2d1n .hero.hbgl-hero--media .hero-cta {
+  justify-content: flex-start;
+}
+.hb2d1n .hero.hbgl-hero--media .btn-ghost {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  color: #fff;
+}
+.hb2d1n .hero.hbgl-hero--media .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.hb2d1n .hero.hbgl-hero--media .stats-bar {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  justify-content: flex-start;
+}
+.hb2d1n .hero.hbgl-hero--media .stat-item .num {
+  color: var(--hb-white);
+}
+.hb2d1n .hero.hbgl-hero--media .stat-item .lbl {
+  color: rgba(255, 255, 255, 0.75);
+}
+/* Dekorasi emoji tersembunyi di hero bergambar (tetap ada di DOM, aman audit). */
+.hb2d1n .hero.hbgl-hero--media .hero-deco {
+  display: none;
+}
+
+/* ===== HERO LEBAR PENUH + SATU LAYAR PENUH =====
+   Section hero tetap memakai class legacy `container` (audit menuntutnya),
+   tapi lebar maksimumnya dilepas supaya latarnya menembus tepi kiri-kanan
+   layar, dan tingginya diisi satu viewport penuh. */
+.hb2d1n section.hbgl-hero-bleed {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.hb2d1n section.hbgl-hero-bleed .hero {
+  margin: 0;
+  border-radius: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* Padding bawah lebih besar dari atas supaya isi hero tidak mepet dengan
+     tepi gelombang di dasarnya. */
+  padding: 96px 6vw 168px;
+}
+/* Tarik hero naik setinggi navbar supaya latarnya berawal dari tepi atas
+   viewport, tepat di balik navbar transparan. Padding atas hero sudah cukup
+   besar sehingga isinya tidak tertutup. */
+.hb2d1n:has(section.hbgl-hero-bleed) section.hbgl-hero-bleed {
+  margin-top: calc(-1 * var(--hb-header-h));
+}
+@media (max-width: 860px) {
+  .hb2d1n section.hbgl-hero-bleed .hero {
+    padding: calc(var(--hb-header-h) + 24px) 20px 132px;
+  }
+}
+
+/* ===== BUTTONS ===== */
+.hb2d1n .btn {
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 13px 26px;
+  font-size: 15px;
+}
+.hb2d1n .btn:hover {
+  transform: translateY(-2px);
+}
+.hb2d1n .btn-primary {
+  background: var(--hb-primary);
+  color: var(--hb-white);
+  box-shadow: 0 12px 26px -14px rgba(22, 60, 50, 0.55);
+}
+.hb2d1n .btn-primary:hover {
+  background: var(--hb-forest);
+}
+.hb2d1n .btn-ghost {
+  background: transparent;
+  color: var(--hb-primary);
+  border: 1.5px solid var(--hb-primary);
+  backdrop-filter: none;
+}
+.hb2d1n .btn-ghost:hover {
+  background: var(--hb-light);
+}
+.hb2d1n .btn-block,
+.hb2d1n--category .btn-block {
+  background: var(--hb-primary);
+  color: var(--hb-white);
+  box-shadow: 0 10px 22px -12px rgba(22, 60, 50, 0.55);
+  border-radius: 10px;
+}
+.hb2d1n .btn-block:hover {
+  background: var(--hb-forest);
+}
+
+/* ===== SECTION HEADINGS ===== */
+.hb2d1n .section-tag {
+  background: var(--hb-sage);
+  color: var(--hb-forest);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  border-radius: 999px;
+  padding: 6px 16px;
+}
+.hb2d1n .section-title {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 600;
+  font-size: clamp(30px, 4.2vw, 50px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--hb-primary);
+}
+.hb2d1n .section-title .accent {
+  color: var(--hb-natural);
+}
+.hb2d1n .section-desc {
+  color: var(--hb-ink-2);
+  font-size: 16.5px;
+  line-height: 1.7;
+}
+
+/* ===== INSTAGRAM FEED (seksi beranda, tepat di bawah testimoni) ===== */
+
+/*
+ * Baris brand: satu tautan memuat logo + deskripsi, sama-sama menuju profil
+ * Instagram. Efek hover disamakan lewat selektor induk, jadi mengarahkan kursor
+ * ke deskripsi ikut meng-hover logo (dan icon muncul) — sekaligus menandai
+ * deskripsi itu sendiri sebagai tombol.
+ */
+.hb2d1n .hbgl-ig-brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 760px;
+  margin: 24px 0 34px;
+  text-decoration: none;
+}
+.hb2d1n .hbgl-ig-brand__logo {
+  position: relative;
+  flex: 0 0 auto;
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hb2d1n .hbgl-ig-brand__logo > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hb2d1n .hbgl-ig-brand__icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(22, 60, 50, 0.9);
+  color: var(--hb-white);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.hb2d1n .hbgl-ig-brand__desc {
+  color: var(--hb-ink-2);
+  font-size: 15.5px;
+  line-height: 1.7;
+  border-bottom: 1px dashed transparent;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.hb2d1n .hbgl-ig-brand:hover .hbgl-ig-brand__logo,
+.hb2d1n .hbgl-ig-brand:focus-visible .hbgl-ig-brand__logo {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px -18px rgba(22, 60, 50, 0.55);
+}
+.hb2d1n .hbgl-ig-brand:hover .hbgl-ig-brand__icon,
+.hb2d1n .hbgl-ig-brand:focus-visible .hbgl-ig-brand__icon {
+  opacity: 1;
+}
+.hb2d1n .hbgl-ig-brand:hover .hbgl-ig-brand__desc,
+.hb2d1n .hbgl-ig-brand:focus-visible .hbgl-ig-brand__desc {
+  color: var(--hb-primary);
+  border-bottom-color: var(--hb-natural);
+}
+
+/* Grid 4 kolom × 2 baris di desktop; 2 kolom di layar sempit. */
+.hb2d1n .hbgl-ig-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.hb2d1n .hbgl-ig-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+}
+.hb2d1n .hbgl-ig-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  transition: transform 0.35s ease;
+}
+.hb2d1n .hbgl-ig-card__placeholder {
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+}
+.hb2d1n .hbgl-ig-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(22, 60, 50, 0.55);
+  color: var(--hb-white);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.hb2d1n .hbgl-ig-card:hover .hbgl-ig-card__img,
+.hb2d1n .hbgl-ig-card:focus-visible .hbgl-ig-card__img {
+  transform: scale(1.06);
+}
+.hb2d1n .hbgl-ig-card:hover .hbgl-ig-card__overlay,
+.hb2d1n .hbgl-ig-card:focus-visible .hbgl-ig-card__overlay {
+  opacity: 1;
+}
+
+/* Tombol "Muat Lebih Banyak" — menambah satu batch (4 × 2) per klik. */
+.hb2d1n .hbgl-ig-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+.hb2d1n .hbgl-ig-more__btn {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 30px;
+  border-radius: 999px;
+  border: 1px solid var(--hb-border);
+  background: var(--hb-white);
+  color: var(--hb-primary);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.hb2d1n .hbgl-ig-more__btn:hover {
+  background: var(--hb-primary);
+  color: var(--hb-white);
+  transform: translateY(-2px);
+}
+.hb2d1n .hbgl-ig-more__btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+  transform: none;
+}
+.hb2d1n .hbgl-ig-more__error {
+  color: #b4462f;
+  font-size: 14px;
+}
+
+/* ===== HALAMAN HTML (kartu redirect /halaman/<slug>) ===== */
+.hb2d1n .hbgl-pg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: 22px;
+}
+.hb2d1n .hbgl-pg-card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
+  background: linear-gradient(145deg, #dcefe2 0%, #eef7f1 100%);
+  border: 1px solid rgba(161, 196, 178, 0.7);
+  border-radius: 18px;
+  color: inherit;
+  text-decoration: none;
+  isolation: isolate;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.hb2d1n .hbgl-pg-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.55), transparent 48%);
+  pointer-events: none;
+  z-index: -1;
+}
+.hb2d1n .hbgl-pg-card__body {
+  position: relative;
+  z-index: 1;
+}
+.hb2d1n .hbgl-pg-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--hb-sage);
+  box-shadow: 0 18px 34px -22px rgba(22, 60, 50, 0.35);
+}
+.hb2d1n .hbgl-pg-card:focus-visible {
+  outline: 3px solid var(--hb-primary);
+  outline-offset: 3px;
+}
+.hb2d1n .hbgl-pg-card__media {
+  position: relative;
+  display: block;
+  /* Kartu horizontal: gambar di kiri, teks di kanan. Lebar tetap 40% dan
+     tinggi mengikuti badan kartu (stretch), jadi rasio tidak lagi dikunci. */
+  flex: 0 0 40%;
+  min-height: 172px;
+  background: var(--hb-sage);
+  /* Batasan penting: efek zoom di bawah memperbesar gambar melewati kotak
+     medianya. Tanpa `overflow: hidden`, gambar tergulir ke badan kartu dan
+     menutupi teks. */
+  overflow: hidden;
+}
+.hb2d1n .hbgl-pg-card__media img {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.hb2d1n .hbgl-pg-card:hover .hbgl-pg-card__media img {
+  transform: scale(1.06);
+}
+.hb2d1n .hbgl-pg-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 20px 22px;
+  flex: 1;
+  min-width: 0;
+}
+.hb2d1n .hbgl-pg-card__tag {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  color: var(--hb-forest);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+.hb2d1n .hbgl-pg-card__title {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--hb-ink);
+}
+.hb2d1n .hbgl-pg-card__desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--hb-ink-2);
+}
+.hb2d1n .hbgl-pg-card__btn {
+  margin-top: 6px;
+  display: block;
+  text-align: center;
+  background: var(--hb-primary);
+  color: var(--hb-white);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  box-shadow: 0 10px 22px -12px rgba(22, 60, 50, 0.55);
+  transition: background 0.25s ease;
+}
+.hb2d1n .hbgl-pg-card:hover .hbgl-pg-card__btn {
+  background: var(--hb-forest);
+}
+
+/* Di layar sempit kartu horizontal (gambar kiri / teks kanan) jadi sesak:
+   tumpuk vertikal dan beri gambar rasio tetap. */
+@media (max-width: 720px) {
+  .hb2d1n .hbgl-pg-card {
+    flex-direction: column;
+  }
+  .hb2d1n .hbgl-pg-card__media {
+    flex: none;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+  }
+}
+
+/* ===== TYPE GRID ===== */
+.hb2d1n .type-card {
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+  box-shadow: none;
+  color: var(--hb-ink);
+}
+.hb2d1n .type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 34px -22px rgba(22, 60, 50, 0.28);
+}
+.hb2d1n .type-card .type-icon {
+  background: var(--hb-sage);
+  border-radius: 14px;
+}
+.hb2d1n .type-card h3 {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--hb-primary);
+}
+.hb2d1n .type-card p {
+  color: var(--hb-ink-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.hb2d1n .type-card .type-price {
+  color: var(--hb-forest);
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 999px;
+  font-weight: 600;
+}
+.hb2d1n .type-card .type-link {
+  color: var(--hb-natural);
+  font-weight: 600;
+}
+
+/* ===== PACKAGE CARD ===== */
+.hb2d1n .package-card,
+.hb2d1n .itin-card,
+.hb2d1n .price-table-wrap {
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+  box-shadow: none;
+  background: var(--hb-white);
+}
+.hb2d1n .package-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 34px -22px rgba(22, 60, 50, 0.28);
+}
+.hb2d1n .package-card.featured {
+  background: var(--hb-white);
+  border-color: var(--hb-border);
+}
+.hb2d1n .package-card .package-loc {
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--hb-primary);
+  font-weight: 600;
+}
+.hb2d1n .package-card h3,
+.hb2d1n--opentrip .package-card h3 {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--hb-ink);
+}
+.hb2d1n .package-card .package-tag {
+  background: var(--hb-sage);
+  color: var(--hb-forest);
+  font-weight: 600;
+  border-radius: 999px;
+}
+.hb2d1n .package-card .package-rating {
+  color: var(--hb-rating);
+  font-weight: 600;
+}
+.hb2d1n .package-card .package-highlight {
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  color: var(--hb-ink);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.hb2d1n .package-card .package-price,
+.hb2d1n--opentrip .package-card .package-price {
+  border-top: 1px solid var(--hb-border);
+}
+.hb2d1n .package-card .package-price .label,
+.hb2d1n .price-item .label {
+  color: var(--hb-ink-2);
+  font-weight: 500;
+}
+.hb2d1n .package-card .package-price .price,
+.hb2d1n .price-item .price {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--hb-primary);
+}
+.hb2d1n .package-card .package-price .price span,
+.hb2d1n .price-item .price span {
+  color: var(--hb-ink-2);
+  font-weight: 500;
+}
+.hb2d1n .package-card .package-days,
+.hb2d1n--category .package-card .package-days {
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+}
+.hb2d1n .package-card .package-days .day-row {
+  color: var(--hb-ink-2);
+}
+.hb2d1n .package-card .package-days .day-row strong {
+  color: var(--hb-forest);
+  font-weight: 600;
+}
+.hb2d1n .facility-pill {
+  color: var(--hb-ink-2);
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 999px;
+}
+
+/* ===== KARTU EDITORIAL ASIMETRIS ===== */
+/* Kartu pertama di grid beranda & listing menjadi wide-editorial: gambar tetap
+   proporsi 4/3-nya dari legacy, tapi kartu merentang penuh dengan body 2 kolom. */
+.hb2d1n--home .package-grid.cols-3 > .package-card:first-child,
+.hb2d1n--category .package-grid > .package-card:first-child {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 4fr 5fr;
+  align-items: stretch;
+  overflow: hidden;
+}
+.hb2d1n--home .package-grid.cols-3 > .package-card:first-child .package-img,
+.hb2d1n--category .package-grid > .package-card:first-child .package-img {
+  aspect-ratio: auto;
+  height: 100%;
+}
+.hb2d1n--home .package-grid.cols-3 > .package-card:first-child h3,
+.hb2d1n--category .package-grid > .package-card:first-child h3 {
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.2;
+}
+.hb2d1n--home .package-grid.cols-3 > .package-card:first-child .package-body,
+.hb2d1n--category .package-grid > .package-card:first-child .package-body {
+  padding: 28px 28px 24px;
+  justify-content: center;
+}
+.hb2d1n--home .package-grid.cols-3 > .package-card:first-child .package-highlight,
+.hb2d1n--category .package-grid > .package-card:first-child .package-highlight {
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+/* Listing dengan tepat dua paket (mis. Private 3D2N): setelah kartu pertama
+   menjadi editorial selebar penuh, kartu kedua dibuat selebar kartu pada grid
+   3 kolom — bukan setengah lebar grid 2 kolom — supaya tidak tampak membesar.
+   Berlaku juga saat 4D3N berisi dua paket. Di layar sempit aturan responsif
+   lain yang menentukan. */
+@media (min-width: 961px) {
+  .hb2d1n--category .package-grid.is-pair {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== BENEFIT & TESTIMONIAL ===== */
+.hb2d1n .benefit-card {
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.hb2d1n .benefit-card .benefit-icon {
+  background: var(--hb-sage);
+  border-radius: 14px;
+}
+.hb2d1n .benefit-card h4 {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--hb-primary);
+}
+.hb2d1n .benefit-card p {
+  color: var(--hb-ink-2);
+  line-height: 1.6;
+}
+.hb2d1n .testimonial-card {
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.hb2d1n .testimonial-card .stars {
+  color: var(--hb-rating);
+}
+.hb2d1n .testimonial-card .quote {
+  color: var(--hb-ink-2);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+.hb2d1n .testimonial-card .author {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  color: var(--hb-primary);
+}
+.hb2d1n .testimonial-card .author span {
+  font-family: var(--font-inter), sans-serif;
+  color: var(--hb-ink-2);
+}
+
+/* ===== TESTIMONIAL MARQUEE ===== */
+/* Geser otomatis pelan dan terus-menerus; berhenti saat kursor di atasnya
+   supaya tetap bisa dibaca. Track berisi dua rangkaian kartu identik lalu
+   digeser -50% untuk loop tanpa jeda — testimoni baru otomatis menyambung
+   di sampingnya. */
+.hb2d1n .hbgl-testimonial-marquee {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+.hb2d1n .testimonial-grid.hbgl-testimonial-track {
+  display: flex;
+  grid-template-columns: none;
+  width: max-content;
+  animation: hbgl-testimonial-slide 55s linear infinite;
+}
+.hb2d1n .testimonial-grid.hbgl-testimonial-track:hover {
+  animation-play-state: paused;
+}
+.hb2d1n .hbgl-testimonial-track .testimonial-card {
+  flex: 0 0 auto;
+  width: min(340px, 78vw);
+  margin-right: 20px;
+}
+@keyframes hbgl-testimonial-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hb2d1n .testimonial-grid.hbgl-testimonial-track {
+    animation: none;
+  }
+}
+
+/* ===== CTA BANNER ===== */
+.hb2d1n .cta-banner {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, var(--hb-primary), var(--hb-forest));
+  border-radius: 24px;
+  padding: 64px 40px;
+  /* Jarak dari banner ke footer. Dipakai margin, bukan padding di parent:
+     padding bawah seksi CTA dimakan `.hb2d1n .container { padding: 0 20px }`
+     yang spesifisitasnya lebih tinggi dari utility pb-[*]. */
+  margin-bottom: 96px;
+}
+/* Latar foto opsional (diatur lewat panel admin). Menutupi gradasi di
+   belakangnya; overlay gelap menjaga judul & tombol tetap terbaca. */
+.hb2d1n .cta-banner .hbgl-cta-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hb2d1n .cta-banner .hbgl-cta-media img {
+  object-fit: cover;
+  object-position: center;
+}
+.hb2d1n .cta-banner .hbgl-cta-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    120deg,
+    rgba(6, 64, 46, 0.9) 0%,
+    rgba(6, 64, 46, 0.72) 45%,
+    rgba(6, 64, 46, 0.5) 100%
+  );
+}
+.hb2d1n .cta-banner h2,
+.hb2d1n .cta-banner p,
+.hb2d1n .cta-banner .btn-primary {
+  position: relative;
+  z-index: 1;
+}
+.hb2d1n .cta-banner::after {
+  /* Emoji dekoratif CSS ("🌴🔥🏖️") dihapus — anti AI-slop, tanpa dekorasi. */
+  content: none;
+}
+.hb2d1n .cta-banner h2 {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3.6vw, 42px);
+  line-height: 1.15;
+  color: var(--hb-white);
+}
+.hb2d1n .cta-banner p {
+  color: rgba(255, 255, 255, 0.85);
+}
+.hb2d1n .cta-banner .btn-primary {
+  background: var(--hb-white);
+  color: var(--hb-primary);
+  box-shadow: 0 14px 28px -14px rgba(0, 0, 0, 0.35);
+}
+.hb2d1n .cta-banner .btn-primary:hover {
+  background: var(--hb-light);
+}
+
+/* ===== FOOTER ===== */
+/* Footer full-bleed: latar menempel penuh ke tepi kiri-kanan layar
+   (border-radius dan margin legacy dibuang), sementara isinya tetap
+   dibungkus `.container` supaya sejajar dengan seksi lain. */
+.hb2d1n .site-footer {
+  background: linear-gradient(160deg, var(--hb-primary), var(--hb-forest));
+  color: var(--hb-sage);
+  border-radius: 0;
+  margin: 0;
+  max-width: none;
+  width: 100%;
+}
+/* Padding horizontal legacy (36px / 24px) dibuang: `.container` di dalam
+   footer sudah menyediakan padding sendiri (32px desktop, 24px/20px mobile),
+   jadi dobel hanya membuat isi footer tidak sejajar dengan seksi lain. */
+.hb2d1n .footer-top {
+  padding: 36px 0 28px;
+}
+.hb2d1n .footer-bottom {
+  padding: 18px 0;
+}
+@media (max-width: 860px) {
+  .hb2d1n .footer-top {
+    padding: 28px 0 22px;
+  }
+  .hb2d1n .footer-bottom {
+    padding: 16px 0;
+    justify-content: center;
+    text-align: center;
+  }
+}
+.hb2d1n .site-footer::before {
+  background: radial-gradient(circle, rgba(221, 232, 225, 0.12), transparent 70%);
+}
+.hb2d1n .site-footer::after {
+  background: radial-gradient(circle, rgba(221, 232, 225, 0.1), transparent 70%);
+}
+.hb2d1n .footer-top h3 {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--hb-white);
+}
+.hb2d1n .footer-top p {
+  color: var(--hb-sage);
+  opacity: 0.9;
+}
+.hb2d1n .footer-social a {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  color: var(--hb-white);
+  font-weight: 500;
+}
+.hb2d1n .footer-social a:hover {
+  background: var(--hb-forest);
+}
+.hb2d1n .footer-social .hbgl-social-ico {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+.hb2d1n .footer-bottom {
+  color: var(--hb-sage);
+  opacity: 0.8;
+}
+.hb2d1n .footer-bottom .heart {
+  color: var(--hb-sage);
+}
+
+/* ===== STICKY WA ===== */
+.hb2d1n .sticky-wa {
+  /* Tetap hijau resmi WhatsApp agar langsung dikenali. */
+  background: linear-gradient(135deg, var(--hb-wa), var(--hb-wa-2));
+}
+
+/* ===== LOGO ===== */
+.hb2d1n .brand-logo .logo-icon,
+.hb2d1n .itin-card-head .emoji {
+  background: linear-gradient(135deg, var(--hb-sage), var(--hb-light));
+}
+.hb2d1n .brand-logo .logo-text .l1 {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: var(--hb-primary);
+  font-weight: 700;
+}
+.hb2d1n .brand-logo.on-dark .logo-text .l1 {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: var(--hb-sage);
+}
+.hb2d1n .brand-logo .logo-text .l2 {
+  color: var(--hb-forest);
+}
+.hb2d1n .brand-logo.on-dark .logo-text .l2 {
+  color: var(--hb-sage);
+}
+
+/* ===== NOTE BOX ===== */
+.hb2d1n .note-box {
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  color: var(--hb-ink-2);
+}
+.hb2d1n .note-box strong {
+  color: var(--hb-ink);
+}
+
+/* ===== HALAMAN PAKET BELUM AKTIF ===== */
+.hb2d1n .inactive-notice {
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hb2d1n .inactive-notice .note-box {
+  text-align: left;
+}
+.hb2d1n .inactive-notice .section-title {
+  margin-top: 24px;
+}
+.hb2d1n .inactive-notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+/* ===== JADWAL KEBERANGKATAN ===== */
+/* Grid kartu tanggal; dipakai `.hbgl-schedule` (lihat package-sections.tsx).
+   Sengaja dibuat ringan: satu kartu = satu keberangkatan, angka tanggal
+   besar supaya mudah dipindai calon pembeli. */
+.hb2d1n .hbgl-schedule {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+.hb2d1n .hbgl-schedule__item {
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hb2d1n .hbgl-schedule__date {
+  display: flex;
+  flex-direction: column;
+}
+.hb2d1n .hbgl-schedule__day {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 800;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--hb-primary);
+}
+.hb2d1n .hbgl-schedule__my {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hb-natural);
+  margin-top: 2px;
+}
+.hb2d1n .hbgl-schedule__desc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--hb-ink-2);
+}
+@media (max-width: 860px) {
+  .hb2d1n .hbgl-schedule {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .hb2d1n .hbgl-schedule {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+}
+
+/* ===== ITINERARY & FASILITAS ===== */
+.hb2d1n .itin-card-head h3,
+.hb2d1n .fas-card h3 {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  color: var(--hb-primary);
+}
+.hb2d1n .itin-card-head span {
+  color: var(--hb-forest);
+  font-weight: 600;
+}
+.hb2d1n .timeline {
+  border-left: 2px solid var(--hb-sage);
+}
+.hb2d1n .timeline li {
+  color: var(--hb-ink-2);
+  line-height: 1.6;
+}
+.hb2d1n .timeline li::before {
+  background: var(--hb-forest);
+  border: 3px solid var(--hb-light);
+}
+.hb2d1n .timeline li .time {
+  color: var(--hb-primary);
+}
+.hb2d1n .fas-card.include {
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+}
+.hb2d1n .fas-card.include .fas-icon {
+  background: var(--hb-sage);
+}
+.hb2d1n .fas-card.include .fas-icon::after {
+  background: var(--hb-forest);
+}
+/* Kartu exclude TIDAK diubah: kemerahan itu penanda semantik negatif. */
+.hb2d1n .fas-card.exclude h3 {
+  color: #a44846;
+}
+
+/* ===== PRICING ===== */
+.hb2d1n .price-table thead th {
+  background: var(--hb-primary);
+  color: var(--hb-white);
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+}
+.hb2d1n .price-table tbody td {
+  color: var(--hb-ink-2);
+  font-weight: 500;
+  border-bottom: 1px solid var(--hb-border);
+}
+.hb2d1n .price-table tbody td:first-child {
+  color: var(--hb-primary);
+  font-weight: 600;
+}
+.hb2d1n .price-table tbody tr:nth-child(odd) {
+  background: var(--hb-bg);
+}
+.hb2d1n .price-table tbody tr:hover {
+  background: var(--hb-light);
+}
+.hb2d1n .price-table .price-tag {
+  font-weight: 600;
+  border-radius: 999px;
+}
+.hb2d1n .price-table td.col-driver .price-tag {
+  background: var(--hb-sage);
+  color: var(--hb-forest);
+}
+.hb2d1n .price-table td.col-photo .price-tag {
+  background: var(--hb-light);
+  color: var(--hb-natural);
+  border: 1px solid var(--hb-border);
+}
+.hb2d1n .price-note {
+  color: var(--hb-ink-2);
+}
+
+/* ===== GALLERY ===== */
+.hb2d1n .gallery-item {
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+/* ===== SCROLL REVEAL ===== */
+/* Tanpa `html.hbgl-js` (no-JS / robot tidak mengeksekusi JS) elemen tetap
+   terlihat — ini progressive enhancement, bukan ketergantungan. Produksi selalu
+   punya .hbgl-js karena ScrollReveal dipasang di PublicShell. */
+html.hbgl-js .hb2d1n [data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html.hbgl-js .hb2d1n [data-reveal].hbgl-inview {
+  opacity: 1;
+  transform: none;
+}
+
+/* ===== ANIMASI MASUK ISI HERO =====
+   Anak-anak `.hero-content` (badge, judul, deskripsi, tombol, statistik)
+   muncul berurutan saat hero terlihat. Dipicu `hbgl-inview` di section-nya,
+   jadi tanpa JS tetap tampil; reduced-motion sudah diredam di bawah. */
+@keyframes hbgl-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > * {
+  animation: hbgl-hero-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > *:nth-child(1) {
+  animation-delay: 0.06s;
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > *:nth-child(2) {
+  animation-delay: 0.15s;
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > *:nth-child(3) {
+  animation-delay: 0.24s;
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > *:nth-child(4) {
+  animation-delay: 0.33s;
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > *:nth-child(5) {
+  animation-delay: 0.42s;
+}
+html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > *:nth-child(n + 6) {
+  animation-delay: 0.5s;
+}
+
+/* ===== LOADING UI (Skeleton & Spinner) ===== */
+/* Muncul saat navigasi antar halaman (loading.tsx App Router). Dirender DI
+   LUAR `.hb2d1n`, jadi gayanya berdiri sendiri memakai token yang sama. */
+.hb-loading {
+  min-height: 70dvh;
+  background: var(--hb-bg);
+  color: var(--hb-ink);
+  font-family: var(--font-inter), sans-serif;
+}
+/* Overlay navigasi publik (PageNavigator): menutupi layar dengan kerangka
+   paket selama pindah halaman. Client-only, tidak ada di markup statis. */
+.hb-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow-y: auto;
+  background: var(--hb-bg);
+}
+.hb-loading-navbar {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--hb-border);
+}
+.hb-loading-logo-chip {
+  width: 116px;
+  height: 44px;
+  margin-left: 32px;
+}
+.hb-loading-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 32px 96px;
+}
+.hb-loading-navbar ~ .hb-loading-inner {
+  padding-top: 24px;
+}
+.hb-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--hb-light);
+  border-radius: 10px;
+}
+.hb-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  animation: hb-shimmer 1.5s infinite;
+}
+@keyframes hb-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.hb-skeleton--hero {
+  height: 420px;
+  border-radius: 24px;
+}
+.hb-skeleton-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 56px;
+}
+.hb-skeleton--tag {
+  width: 128px;
+  height: 26px;
+  border-radius: 999px;
+}
+.hb-skeleton--title {
+  width: 42%;
+  height: 34px;
+  border-radius: 8px;
+}
+.hb-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+.hb-skeleton-card {
+  background: var(--hb-white);
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.hb-skeleton-card-visual {
+  aspect-ratio: 4 / 3;
+  border-radius: 0;
+}
+.hb-skeleton-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hb-skeleton-card .hb-skeleton--title {
+  width: 68%;
+  height: 18px;
+}
+.hb-skeleton--line {
+  width: 100%;
+  height: 12px;
+}
+.hb-skeleton--line.short {
+  width: 55%;
+}
+.hb-skeleton--price {
+  width: 42%;
+  height: 20px;
+}
+.hb-skeleton--btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+}
+.hb-page-loader {
+  min-height: 70dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 48px 24px;
+  font-family: var(--font-inter), sans-serif;
+}
+.hb-spinner {
+  width: 46px;
+  height: 46px;
+  border: 3px solid var(--hb-sage);
+  border-top-color: var(--hb-primary);
+  border-radius: 50%;
+  animation: hb-spin 0.8s linear infinite;
+}
+@keyframes hb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.hb-page-loader-text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--hb-ink-2);
+}
+
+/* ===== NAVBAR SHIFT SAAT SCROLL ===== */
+html.hbgl-scrolled .hb2d1n .site-header {
+  background: rgba(250, 250, 247, 0.92);
+  box-shadow: 0 8px 30px -18px rgba(22, 60, 50, 0.32);
+  border-bottom-color: transparent;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1080px) {
+  .hb2d1n .main-nav {
+    border-radius: 14px;
+  }
+  /* Tombol menu tetap berlatar solid (bukan transparan) di mobile, termasuk di
+     halaman ber-hero yang navbar-nya sengaja dibuat tembus pandang. */
+  .hb2d1n .menu-toggle,
+  .hb2d1n:has(section.hbgl-hero-bleed) .menu-toggle {
+    background: var(--hb-white);
+    border: 1px solid var(--hb-border);
+    box-shadow: 0 6px 18px -12px rgba(22, 60, 50, 0.4);
+  }
+  /* Daftar menu yang terbuka selalu berlatar solid dengan teks gelap, walau
+     header di atas hero transparan — supaya tautannya tidak "hilang". */
+  .hb2d1n:has(section.hbgl-hero-bleed) .main-nav.open a {
+    color: var(--hb-ink);
+  }
+  .hb2d1n:has(section.hbgl-hero-bleed) .main-nav.open a:hover {
+    color: var(--hb-forest);
+  }
+}
+@media (max-width: 860px) {
+  .hb2d1n {
+    --hb-header-h: 68px;
+  }
+  .hb2d1n .header-inner {
+    padding: 10px 24px;
+  }
+  .hb-skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+  .hb-skeleton--hero {
+    height: 320px;
+  }
+  .hb-loading-logo-chip {
+    margin-left: 24px;
+  }
+  .hb-loading-inner {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .hb2d1n .container {
+    padding: 0 24px;
+  }
+  .hb2d1n .section {
+    padding-block: 72px;
+  }
+  .hb2d1n .hero {
+    padding: 56px 28px;
+  }
+  .hb2d1n .hero p,
+  .hb2d1n--home .hero p {
+    font-size: 15.5px;
+  }
+  .hb2d1n .hero.hbgl-hero--media {
+    min-height: 460px;
+    padding: 48px 28px;
+  }
+  .hb2d1n--home .package-grid.cols-3 > .package-card:first-child,
+  .hb2d1n--category .package-grid > .package-card:first-child {
+    grid-template-columns: 1fr;
+  }
+  .hb2d1n--home .package-grid.cols-3 > .package-card:first-child .package-img,
+  .hb2d1n--category .package-grid > .package-card:first-child .package-img {
+    aspect-ratio: 4 / 3;
+    height: auto;
+  }
+  /* Feed Instagram: 4 kolom di desktop jadi 2 kolom (tetap 4 × 2 kelipatan). */
+  .hb2d1n .hbgl-ig-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .hb2d1n .header-inner {
+    padding: 10px 20px;
+  }
+  .hb2d1n .container {
+    padding: 0 20px;
+  }
+  .hb2d1n .section {
+    padding-block: 64px;
+  }
+  .hb2d1n .hero {
+    padding: 48px 20px;
+  }
+  .hb2d1n .hero h1,
+  .hb2d1n--home .hero h1 {
+    font-size: clamp(32px, 9vw, 40px);
+  }
+  .hb2d1n .section-title {
+    font-size: 30px;
+  }
+  .hb2d1n .cta-banner {
+    padding: 48px 24px;
+  }
+  .hb2d1n .hero.hbgl-hero--media {
+    min-height: 420px;
+    padding: 44px 22px;
+  }
+  .hb2d1n .hbgl-ig-brand {
+    gap: 14px;
+    margin: 20px 0 28px;
+  }
+  .hb2d1n .hbgl-ig-brand__logo {
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+  }
+  .hb2d1n .hbgl-ig-brand__desc {
+    font-size: 14.5px;
+  }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  html.hbgl-js .hb2d1n [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html.hbgl-js .hb2d1n .hbgl-hero-bleed.hbgl-inview .hero-content > * {
+    animation: none;
+  }
+  /* Skeleton & spinner loading diredam: tetap tampil sebagai balok statis,
+     tapi shimmer/spin-nya berhenti (loading UI ada di luar `.hb2d1n`). */
+  .hb-skeleton::after,
+  .hb-spinner {
+    animation: none;
+  }
+  .hb2d1n *,
+  .hb2d1n *::before,
+   .hb2d1n *::after {
+     animation-duration: 0.01ms !important;
+     animation-iteration-count: 1 !important;
+     transition-duration: 0.01ms !important;
+   }
+}
+
+/* =====================================================================
+ * HALAMAN LINK-BIO (/bio/<slug>)
+ *
+ * Desain link-bio yang dulu ditempel admin sebagai dokumen HTML utuh
+ * (`#hbw-bio` / `.hbw-portal`) kini dirender komponen native `<BioLinkPage>`.
+ * Selector dipetakan ke `.hbgl-bio` / `.hbgl-bioportal` dan tidak di-scope di
+ * bawah `.hb2d1n` karena halaman ini berdiri sendiri di luar layout situs.
+ * ===================================================================== */
+.hbgl-bio,
+.hbgl-bioportal {
+  --hb-title: "Baloo 2", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --hb-green: #0e7c66;
+  --hb-green-dark: #0a5e4d;
+  --hb-green-soft: #e6f4f0;
+  --hb-accent: #ff8a3d;
+  --hb-ink: #12211d;
+  --hb-muted: #5c6f69;
+  --hb-line: #dce9e5;
+  --hb-card: #ffffff;
+}
+.hbgl-bio,
+.hbgl-bio *,
+.hbgl-bioportal * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.hbgl-bio {
+  font-family: var(--font-inter), "Plus Jakarta Sans", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--hb-ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding: 0 0 44px;
+  min-height: 100vh;
+  background: radial-gradient(900px 420px at 50% -160px, #cfebe2 0%, rgba(207, 235, 226, 0) 70%),
+    linear-gradient(180deg, #f4faf8 0%, #eef4f2 100%);
+}
+.hbgl-bio .hb-wrap {
+  max-width: 470px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+/* HERO */
+.hbgl-bio .hb-hero {
+  text-align: center;
+  padding: 34px 0 18px;
+}
+.hbgl-bio .hb-logo {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  padding: 6px;
+  display: block;
+  margin: 0 auto 14px;
+  box-shadow: 0 10px 26px rgba(14, 124, 102, 0.2);
+}
+.hbgl-bio .hb-brand {
+  font-family: var(--hb-title);
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+.hbgl-bio .hb-tag {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--hb-green);
+}
+.hbgl-bio .hb-sub {
+  margin-top: 12px;
+  font-size: 14.5px;
+  color: var(--hb-muted);
+  white-space: pre-line;
+}
+.hbgl-bio .hb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.hbgl-bio .hb-chip {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--hb-green-dark);
+  background: #fff;
+  border: 1px solid var(--hb-line);
+  padding: 6px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* TOMBOL WA ATAS */
+.hbgl-bio .hb-wabar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 20px;
+  padding: 15px 18px;
+  border-radius: 14px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #25d366 0%, #1daf52 100%);
+  color: #06301c;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.hbgl-bio .hb-wabar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.45);
+}
+.hbgl-bio .hb-wabar:active {
+  transform: translateY(0);
+}
+.hbgl-bio .hb-wabar svg {
+  width: 19px;
+  height: 19px;
+  fill: #06301c;
+  flex: 0 0 19px;
+}
+.hbgl-bio .hb-wahint {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--hb-muted);
+  font-weight: 600;
+}
+
+/* SECTION LABEL */
+.hbgl-bio .hb-sect {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 14px;
+}
+.hbgl-bio .hb-sect span {
+  font-family: var(--hb-title);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--hb-muted);
+  white-space: nowrap;
+}
+.hbgl-bio .hb-sect::before,
+.hbgl-bio .hb-sect::after {
+  content: "";
+  height: 1px;
+  background: var(--hb-line);
+  flex: 1;
+}
+
+/* KARTU PAKET */
+.hbgl-bio .hb-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: var(--hb-card);
+  border: 1px solid var(--hb-line);
+  border-radius: 18px;
+  padding: 15px 15px 15px 20px;
+  margin-bottom: 11px;
+  font: inherit;
+  color: inherit;
+  box-shadow: 0 2px 10px rgba(12, 60, 50, 0.05);
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.hbgl-bio .hb-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--hb-green) 0%, var(--hb-green-dark) 100%);
+}
+.hbgl-bio .hb-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(12, 60, 50, 0.13);
+  border-color: #bfddd5;
+}
+.hbgl-bio .hb-card:active {
+  transform: translateY(0);
+}
+.hbgl-bio .hb-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.hbgl-bio .hb-ico {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--hb-green-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  overflow: hidden;
+}
+.hbgl-bio .hb-ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hbgl-bio .hb-body {
+  flex: 1;
+  min-width: 0;
+}
+.hbgl-bio .hb-name {
+  font-family: var(--hb-title);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  line-height: 1.25;
+}
+.hbgl-bio .hb-desc {
+  font-size: 12.6px;
+  color: var(--hb-muted);
+  margin-top: 3px;
+}
+.hbgl-bio .hb-badge {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  background: var(--hb-accent);
+  color: #fff;
+}
+.hbgl-bio .hb-badge.alt {
+  background: var(--hb-green);
+}
+.hbgl-bio .hb-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--hb-line);
+}
+.hbgl-bio .hb-price small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--hb-muted);
+  font-weight: 600;
+}
+.hbgl-bio .hb-price b {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--hb-green-dark);
+  letter-spacing: -0.3px;
+}
+.hbgl-bio .hb-price b i {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hb-muted);
+}
+.hbgl-bio .hb-see {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  background: var(--hb-green-soft);
+  color: var(--hb-green-dark);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.hbgl-bio .hb-see::after {
+  content: "›";
+  font-size: 16px;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+/* OPEN TRIP */
+.hbgl-bio .hb-open {
+  background: var(--hb-card);
+  border: 1px solid var(--hb-line);
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(12, 60, 50, 0.05);
+  overflow: hidden;
+}
+.hbgl-bio .hb-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 15px;
+  text-decoration: none;
+  color: inherit;
+  border-top: 1px solid var(--hb-line);
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.hbgl-bio .hb-row:first-child {
+  border-top: 0;
+}
+.hbgl-bio .hb-row:hover {
+  background: #f6fbf9;
+}
+.hbgl-bio .hb-rnum {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--hb-green-soft);
+  color: var(--hb-green-dark);
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hbgl-bio .hb-rbody {
+  flex: 1;
+  min-width: 0;
+}
+.hbgl-bio .hb-rname {
+  font-family: var(--hb-title);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  line-height: 1.25;
+}
+.hbgl-bio .hb-rjad {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--hb-green-soft);
+  color: var(--hb-green-dark);
+}
+.hbgl-bio .hb-rjad.wknd {
+  background: #fff0e4;
+  color: #b5540f;
+}
+.hbgl-bio .hb-rjad.wkdy {
+  background: #eef1f5;
+  color: #4a5a66;
+}
+.hbgl-bio .hb-rprice {
+  flex: 0 0 auto;
+  text-align: right;
+  white-space: nowrap;
+}
+.hbgl-bio .hb-rprice b {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--hb-green-dark);
+  letter-spacing: -0.2px;
+}
+.hbgl-bio .hb-rprice small {
+  font-size: 9.5px;
+  color: var(--hb-muted);
+  font-weight: 600;
+  margin-left: 1px;
+}
+.hbgl-bio .hb-rgo {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hbgl-bio .hb-rgo svg {
+  width: 15px;
+  height: 15px;
+  fill: #06301c;
+}
+.hbgl-bio .hb-opennote {
+  padding: 11px 15px;
+  background: #f6fbf9;
+  border-top: 1px solid var(--hb-line);
+  font-size: 11px;
+  color: var(--hb-muted);
+  line-height: 1.6;
+}
+
+/* GALERI MASONRY */
+.hbgl-bio .hb-gal {
+  column-count: 2;
+  column-gap: 9px;
+}
+@media (min-width: 600px) {
+  .hbgl-bio .hb-gal {
+    column-count: 3;
+    column-gap: 10px;
+  }
+}
+.hbgl-bio .hb-gal figure {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin: 0 0 9px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--hb-green-soft);
+  box-shadow: 0 2px 8px rgba(12, 60, 50, 0.07);
+  position: relative;
+}
+.hbgl-bio .hb-gal img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+  transition: transform 0.4s ease;
+}
+.hbgl-bio .hb-gal figure:hover img {
+  transform: scale(1.05);
+}
+
+/* CTA */
+.hbgl-bio .hb-cta {
+  display: block;
+  text-decoration: none;
+  margin-top: 18px;
+  background: linear-gradient(135deg, #123b33 0%, #0a5e4d 100%);
+  border-radius: 20px;
+  padding: 22px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(10, 94, 77, 0.28);
+}
+.hbgl-bio .hb-cta h3 {
+  font-family: var(--hb-title);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+.hbgl-bio .hb-cta p {
+  font-size: 13px;
+  color: #ffffff;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+.hbgl-bio .hb-cta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  background: #25d366;
+  color: #0a2e23;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 22px;
+  border-radius: 12px;
+}
+.hbgl-bio .hb-cta span svg {
+  width: 17px;
+  height: 17px;
+  fill: #0a2e23;
+}
+.hbgl-bio .hb-end {
+  text-align: center;
+  margin-top: 24px;
+}
+.hbgl-bio .hb-end p {
+  font-size: 11.5px;
+  color: var(--hb-muted);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+.hbgl-bio .hb-end b {
+  color: var(--hb-green-dark);
+  font-weight: 800;
+}
+.hbgl-bio .hb-legal {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hb-line);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--hb-muted);
+  text-transform: uppercase;
+}
+
+/* ===== POPUP / MODAL ===== */
+.hbgl-bioportal {
+  font-family: var(--font-inter), "Plus Jakarta Sans", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--hb-ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+}
+.hbgl-bioportal.on {
+  display: block;
+}
+.hbgl-bioportal .hb-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 32, 26, 0.62);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.hbgl-bioportal.show .hb-backdrop {
+  opacity: 1;
+}
+.hbgl-bioportal .hb-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 100%);
+  width: 100%;
+  max-width: 470px;
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 22px 22px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.3);
+}
+.hbgl-bioportal.show .hb-sheet {
+  transform: translate(-50%, 0);
+}
+@media (min-width: 640px) {
+  .hbgl-bioportal .hb-sheet {
+    bottom: auto;
+    top: 50%;
+    border-radius: 22px;
+    max-height: 88vh;
+    transform: translate(-50%, -46%) scale(0.97);
+    opacity: 0;
+    transition: transform 0.24s ease, opacity 0.24s ease;
+  }
+  .hbgl-bioportal.show .hb-sheet {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+.hbgl-bioportal .hb-mhead {
+  position: relative;
+  padding: 20px 52px 16px 20px;
+  background: linear-gradient(135deg, var(--hb-green) 0%, var(--hb-green-dark) 100%);
+  color: #fff;
+  flex: 0 0 auto;
+}
+.hbgl-bioportal .hb-grab {
+  width: 38px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.45);
+  margin: 0 auto 12px;
+}
+@media (min-width: 640px) {
+  .hbgl-bioportal .hb-grab {
+    display: none;
+  }
+}
+.hbgl-bioportal .hb-mtitle {
+  font-family: var(--hb-title);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  line-height: 1.25;
+}
+.hbgl-bioportal .hb-mmeta {
+  margin-top: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.hbgl-bioportal .hb-mmeta i {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+.hbgl-bioportal .hb-close {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+.hbgl-bioportal .hb-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.hbgl-bioportal .hb-mbody {
+  padding: 18px 20px 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+}
+.hbgl-bioportal .hb-h {
+  font-family: var(--hb-title);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--hb-muted);
+  margin: 20px 0 9px;
+}
+.hbgl-bioportal .hb-h:first-child {
+  margin-top: 0;
+}
+.hbgl-bioportal .hb-day {
+  font-family: var(--hb-title);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--hb-green-dark);
+  background: var(--hb-green-soft);
+  padding: 6px 11px;
+  border-radius: 8px;
+  display: inline-block;
+  margin: 12px 0 8px;
+}
+.hbgl-bioportal .hb-day:first-of-type {
+  margin-top: 0;
+}
+.hbgl-bioportal .hb-steps {
+  list-style: none;
+  position: relative;
+  padding-left: 15px;
+}
+.hbgl-bioportal .hb-steps::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 7px;
+  bottom: 7px;
+  width: 1.5px;
+  background: var(--hb-line);
+}
+.hbgl-bioportal .hb-steps li {
+  position: relative;
+  padding: 0 0 9px 0;
+  font-size: 13px;
+  color: var(--hb-ink);
+}
+.hbgl-bioportal .hb-steps li::before {
+  content: "";
+  position: absolute;
+  left: -15px;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--hb-green);
+}
+.hbgl-bioportal .hb-steps li b {
+  display: inline-block;
+  min-width: 44px;
+  font-weight: 800;
+  color: var(--hb-green-dark);
+  font-size: 12px;
+}
+.hbgl-bioportal .hb-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  border: 1px solid var(--hb-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.hbgl-bioportal .hb-tbl th {
+  background: var(--hb-green-soft);
+  color: var(--hb-green-dark);
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 9px 8px;
+  text-align: left;
+}
+.hbgl-bioportal .hb-tbl td {
+  padding: 8px;
+  border-top: 1px solid var(--hb-line);
+}
+.hbgl-bioportal .hb-tbl tr:nth-child(even) td {
+  background: #fafcfb;
+}
+.hbgl-bioportal .hb-tbl td:first-child {
+  font-weight: 700;
+}
+.hbgl-bioportal .hb-tbl td:nth-child(2) {
+  color: var(--hb-green-dark);
+  font-weight: 700;
+}
+.hbgl-bioportal .hb-note {
+  font-size: 11.5px;
+  color: var(--hb-muted);
+  margin-top: 8px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.hbgl-bioportal .hb-list {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.hbgl-bioportal .hb-list li {
+  font-size: 12.8px;
+  padding-left: 22px;
+  position: relative;
+  color: var(--hb-ink);
+}
+.hbgl-bioportal .hb-list li::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 800;
+  font-size: 12px;
+}
+.hbgl-bioportal .hb-list.inc li::before {
+  content: "✓";
+  color: var(--hb-green);
+}
+.hbgl-bioportal .hb-list.exc li::before {
+  content: "✕";
+  color: #c4523f;
+}
+.hbgl-bioportal .hb-mfoot {
+  flex: 0 0 auto;
+  padding: 13px 20px calc(13px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--hb-line);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hbgl-bioportal .hb-mfoot .p {
+  flex: 1;
+  min-width: 0;
+}
+.hbgl-bioportal .hb-mfoot .p small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--hb-muted);
+  font-weight: 600;
+}
+.hbgl-bioportal .hb-mfoot .p b {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--hb-green-dark);
+}
+.hbgl-bioportal .hb-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  background: #25d366;
+  color: #08331f;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 13px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+  white-space: nowrap;
+}
+.hbgl-bioportal .hb-wa svg {
+  width: 17px;
+  height: 17px;
+  fill: #08331f;
+}
+
+@media (max-width: 360px) {
+  .hbgl-bio .hb-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hbgl-bio .hb-see {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hbgl-bio *,
+  .hbgl-bioportal * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Category" ADD COLUMN     "pgAnchor" TEXT NOT NULL DEFAULT 'halaman',
+ADD COLUMN     "pgTag" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "pgTitle" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "pgAccent" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "pgSuffix" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "pgDesc" TEXT NOT NULL DEFAULT '';

@@ -1,0 +1,2528 @@
+/* ---------------------------------------------------------------------------
+ * Gaya panel admin. Terpisah dari legacy.css supaya situs publik tetap
+ * persis seperti desain aslinya.
+ * --------------------------------------------------------------------------- */
+
+.admin {
+  min-height: 100dvh;
+  background: var(--hb-bg);
+  color: var(--hb-ink);
+  font-family:
+    var(--font-poppins),
+    system-ui,
+    sans-serif;
+}
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100dvh;
+}
+
+.admin-sidebar {
+  background: var(--hb-primary);
+  color: var(--hb-sage);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+}
+
+/* Tombol hamburger & latar gelap hanya relevan di layar sempit; di desktop
+   keduanya disembunyikan dan sidebar tampil permanen. */
+.admin-menubtn {
+  display: none;
+}
+
+.admin-sidebar-backdrop {
+  display: none;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+}
+
+.admin-brand svg {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--hb-sage);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+
+.admin-nav a:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.admin-nav a[aria-current="page"] {
+  /* Idiom yang sama dengan menu-toggle publik: badge sage dengan teks hijau
+     tua — lebih terang dan terbaca daripada isian hijau di sidebar gelap. */
+  background: var(--hb-sage);
+  color: var(--hb-primary);
+  font-weight: 600;
+}
+
+.admin-main {
+  position: relative;
+  padding: 28px 32px 64px;
+  min-width: 0;
+}
+
+/*
+ * Spinner navigasi antar-panel. `position: absolute` relatif ke
+ * `.admin-main` supaya hanya menutupi panel kanan dan tidak pernah menutup
+ * sidebar (berbeda dari overlay publik yang `fixed`).
+ */
+.admin-nav-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(250 250 247 / 60%);
+}
+
+.admin-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.admin-head h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.admin-head p {
+  margin: 4px 0 0;
+  color: var(--hb-ink-2);
+  font-size: 14px;
+}
+
+.admin-card {
+  background: #fff;
+  border: 1px solid var(--hb-sage);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--hb-border);
+  vertical-align: middle;
+}
+
+.admin-table th {
+  color: var(--hb-ink-2);
+  font-weight: 600;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--hb-light);
+}
+
+.admin-thumb {
+  width: 56px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--hb-sage);
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.admin-field > label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-field small {
+  color: var(--hb-ink-2);
+  font-size: 12px;
+}
+
+.admin-input,
+.admin-textarea,
+.admin-select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--hb-border);
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: var(--hb-ink);
+}
+
+/* Dropdown pilihan ganda berbasis centang ("Pilih Kategori"). Tombolnya
+   menampilkan ringkasan pilihan; daftar centang muncul mengambang di bawahnya. */
+.admin-multicheck {
+  position: relative;
+}
+
+.admin-multicheck__btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--hb-border);
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: var(--hb-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-multicheck__btn[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-multicheck__btn:focus-visible {
+  outline: 2px solid var(--hb-forest);
+  outline-offset: 1px;
+  border-color: var(--hb-forest);
+}
+
+.admin-multicheck__placeholder {
+  color: var(--hb-ink-2);
+}
+
+.admin-multicheck__caret {
+  flex-shrink: 0;
+  color: var(--hb-ink-2);
+  font-size: 12px;
+}
+
+.admin-multicheck__menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--hb-border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.admin-multicheck__opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.admin-multicheck__opt:hover {
+  background: var(--hb-light);
+}
+
+.admin-multicheck__opt input {
+  accent-color: var(--hb-forest);
+}
+
+.admin-textarea {
+  min-height: 90px;
+  resize: vertical;
+  /* Kata panjang tanpa spasi (URL, slug) membungkus, bukan melebar. */
+  overflow-wrap: anywhere;
+}
+
+/* Editor kode (dokumen HTML utuh): monospace, spasi dihormati, dan tidak
+   membungkus — struktur indentasi tetap terbaca, sisanya digulir mendatar. */
+.admin-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 340px;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+/* Textarea yang tumbuh mengikuti isi (field teks satu baris). Tinggi diatur
+   oleh JS; `min-height` default 90px di-nol-kan supaya setinggi input biasa. */
+.admin-textarea--grow {
+  min-height: 38px;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.admin-input:focus-visible,
+.admin-textarea:focus-visible,
+.admin-select:focus-visible {
+  outline: 2px solid var(--hb-forest);
+  outline-offset: 1px;
+  border-color: var(--hb-forest);
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--hb-forest);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-btn--ghost {
+  background: #fff;
+  border-color: var(--hb-border);
+  color: var(--hb-ink);
+}
+
+.admin-btn--danger {
+  background: #dc2626;
+}
+
+.admin-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-alert {
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.admin-alert--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.admin-alert--ok {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+/* --- Media library --- */
+
+.admin-field__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-field--tight {
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.admin-field--tight .admin-field__label {
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+.admin-btn--small {
+  padding: 6px 11px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.admin-hint {
+  margin: 0;
+  color: var(--hb-ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-empty {
+  padding: 34px 20px;
+  text-align: center;
+  color: var(--hb-ink-2);
+  background: #fff;
+  border: 1px dashed var(--hb-border);
+  border-radius: 14px;
+}
+
+.admin-head__sub {
+  margin: 6px 0 0;
+  color: var(--hb-ink-2);
+  font-size: 14px;
+}
+
+.admin-media-upload__row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.admin-media-upload__row .admin-field {
+  margin-bottom: 0;
+}
+
+.admin-media-upload__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.admin-media-upload__actions .admin-hint {
+  flex: 1 1 260px;
+}
+
+.admin-media-upload .admin-alert {
+  margin: 14px 0 0;
+}
+
+.admin-progress {
+  position: relative;
+  height: 26px;
+  margin-top: 16px;
+  border-radius: 8px;
+  background: var(--hb-sage);
+  overflow: hidden;
+}
+
+.admin-progress__bar {
+  height: 100%;
+  background: var(--hb-forest);
+  transition: width 120ms linear;
+}
+
+.admin-progress__label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hb-ink);
+  mix-blend-mode: luminosity;
+}
+
+.admin-media-search {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.admin-media-search input {
+  flex: 1 1 260px;
+  padding: 9px 11px;
+  border: 1px solid var(--hb-border);
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: var(--hb-ink);
+}
+
+.admin-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.admin-media-card {
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--hb-sage);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-media-card__thumb {
+  aspect-ratio: 4 / 3;
+  background: var(--hb-sage);
+}
+
+.admin-media-card__thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.admin-media-card__body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.admin-media-card__name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.admin-media-card__meta,
+.admin-media-card__folder {
+  margin: 0;
+  color: var(--hb-ink-2);
+  font-size: 12px;
+}
+
+.admin-media-card__folder {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.admin-media-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.admin-media-card .admin-alert {
+  margin: 4px 0 0;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+@media (max-width: 900px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  /*
+   * Di layar sempit sidebar jadi panel geser: keluar dari aliran grid,
+   * disembunyikan ke kiri, lalu meluncur masuk saat `.is-open`. Sidebar tetap
+   * satu-satunya elemen dengan tinggi penuh, jadi menu bisa digulir sendiri.
+   */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    width: min(280px, 82vw);
+    height: 100dvh;
+    padding-top: 68px;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 40px -12px rgb(6 64 46 / 55%);
+  }
+
+  .admin-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .admin-menubtn {
+    display: inline-flex;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 70;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    background: var(--hb-sage);
+    color: var(--hb-primary);
+    cursor: pointer;
+    box-shadow: 0 6px 18px -8px rgb(6 64 46 / 55%);
+  }
+
+  .admin-menubtn__bars {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 14px;
+  }
+
+  .admin-menubtn__bars span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .admin-menubtn__bars span:nth-child(1) {
+    top: 0;
+  }
+
+  .admin-menubtn__bars span:nth-child(2) {
+    top: 6px;
+  }
+
+  .admin-menubtn__bars span:nth-child(3) {
+    top: 12px;
+  }
+
+  .admin-menubtn[aria-expanded="true"] .admin-menubtn__bars span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .admin-menubtn[aria-expanded="true"] .admin-menubtn__bars span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .admin-menubtn[aria-expanded="true"] .admin-menubtn__bars span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .admin-sidebar-backdrop.is-open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgb(6 64 46 / 45%);
+  }
+
+  .admin-main {
+    /* Ruang untuk tombol hamburger yang mengapung di kiri atas. */
+    padding: 64px 16px 48px;
+  }
+
+  .admin-media-upload__row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+}
+
+/* --- Login ---------------------------------------------------------------- */
+
+.login-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px 16px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.login-brand svg {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.login-sub {
+  margin: 0 0 18px;
+  color: var(--hb-ink-2);
+  font-size: 14px;
+  text-align: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-back {
+  margin: 18px 0 0;
+  font-size: 13px;
+}
+
+.login-back a {
+  color: var(--hb-ink);
+}
+
+/* --- Sidebar footer ------------------------------------------------------- */
+
+.admin-sidebar-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.admin-user {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.admin-user span {
+  color: var(--hb-sage);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.admin-sidebar-foot .admin-btn--ghost {
+  background: transparent;
+  border-color: rgb(255 255 255 / 22%);
+  color: var(--hb-sage);
+}
+
+.admin-sidebar-foot .admin-btn--ghost:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+/* --- Kartu ringkasan ------------------------------------------------------ */
+
+/*
+ * Tiga kartu ringkasan di dashboard. Grid dibuat tiga kolom tetap agar
+ * ukurannya selalu sama persis (bukan `auto-fit` yang bisa menyisakan kolom
+ * kosong), dan `align-items: stretch` + `height: 100%` menyeragamkan tingginya
+ * walau isi tiap kartu berbeda (satu pakai bar, satu pakai thumbnail).
+ */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Kartu statistik bersebelahan di dalam grid: batalkan margin sibling default
+   (`.admin-card + .admin-card`) yang membuat kolom ke-2 dan ke-3 turun 16px. */
+.admin-stat-grid .admin-card + .admin-card {
+  margin-top: 0;
+}
+
+.admin-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+.admin-stat--link {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.admin-stat--link:hover {
+  border-color: var(--hb-natural);
+  box-shadow: 0 10px 24px rgb(22 60 50 / 8%);
+  transform: translateY(-2px);
+}
+
+.admin-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: var(--hb-sage);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.admin-stat-value {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.admin-stat-label {
+  color: var(--hb-ink-2);
+  font-size: 13px;
+}
+
+.admin-stat-sub {
+  margin-top: 2px;
+  color: var(--hb-ink-2);
+  font-size: 13px;
+}
+
+.admin-stat-bar {
+  display: block;
+  height: 7px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: var(--hb-light);
+  overflow: hidden;
+}
+
+.admin-stat-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hb-natural);
+}
+
+.admin-stat-strip {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  min-height: 40px;
+}
+
+.admin-stat-strip img {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--hb-sage);
+}
+
+.admin-stat-strip__empty {
+  align-self: center;
+  color: var(--hb-ink-2);
+  font-size: 12px;
+}
+
+.admin-stat-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  color: var(--hb-ink-2);
+  font-size: 12px;
+}
+
+/* --- Kartu dashboard lanjutan ------------------------------------------- */
+
+.admin-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-dash-grid .admin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Jarak antar kartu di grid sudah diatur `gap`, jadi margin sibling bawaan
+   `.admin-card + .admin-card` harus dimatikan di dalam grid ini. */
+.admin-dash-grid .admin-card + .admin-card {
+  margin-top: 0;
+}
+
+.admin-dash-grid .admin-card > .admin-btn {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.admin-dash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-dash-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-dash-row__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-dash-row__title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--hb-forest);
+  text-decoration: none;
+}
+
+.admin-dash-row__title:hover {
+  text-decoration: underline;
+}
+
+.admin-dash-row__meta {
+  color: var(--hb-ink-2);
+  font-size: 12.5px;
+}
+
+.admin-dash-row__bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--hb-light);
+  overflow: hidden;
+}
+
+.admin-dash-row__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hb-natural);
+}
+
+.admin-flag--ok {
+  background: var(--hb-sage);
+  color: var(--hb-primary);
+}
+
+.admin-thumbrow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-thumbrow__item {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--hb-sage);
+}
+
+.admin-thumbrow__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-dash-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .admin-stat-grid,
+  .admin-dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-card + .admin-card {
+  margin-top: 16px;
+}
+
+.admin-card-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.admin-card-text {
+  margin: 0;
+  color: var(--hb-ink-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-btn--block {
+  width: 100%;
+}
+
+/* ------------------------------------------------------------------ */
+/* Form generik                                                        */
+/* ------------------------------------------------------------------ */
+
+.admin-form {
+  display: block;
+}
+
+.admin-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.admin-page-head h1 {
+  margin: 4px 0 0;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.admin-backlink {
+  font-size: 13px;
+  color: var(--hb-ink-2);
+  text-decoration: none;
+}
+
+.admin-backlink:hover {
+  text-decoration: underline;
+}
+
+/* Grid 12 kolom supaya `half`/`third`/`two-thirds` cukup untuk form yang
+   padat, dan otomatis turun ke satu kolom di layar sempit. */
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.admin-span-full {
+  grid-column: span 12;
+}
+
+.admin-span-two-thirds {
+  grid-column: span 8;
+}
+
+.admin-span-half {
+  grid-column: span 6;
+}
+
+.admin-span-third {
+  grid-column: span 4;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.admin-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hb-forest);
+}
+
+.admin-req {
+  color: #b4453c;
+}
+
+.admin-field__help {
+  color: var(--hb-ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Field yang dinonaktifkan karena field lain diisi (`disabledWhen`). */
+.admin-field__warn {
+  color: #a35a00;
+  font-weight: 600;
+}
+
+.admin-input:disabled,
+.admin-textarea:disabled,
+.admin-select:disabled {
+  background: var(--hb-light);
+  color: var(--hb-ink-2);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.admin-check {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-check input {
+  margin-top: 3px;
+}
+
+.admin-error {
+  margin: 0;
+  color: #a3342b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-error-summary {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: #fdf1f0;
+  border: 1px solid #f0c8c4;
+  border-radius: 12px;
+  color: #7d2a23;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-error-summary ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.admin-error-summary code {
+  font-size: 12px;
+  background: #fff;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+/* Repeater ------------------------------------------------------------ */
+
+.admin-repeater {
+  margin-bottom: 22px;
+  padding: 16px;
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+}
+
+.admin-repeater__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.admin-repeater__tools {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-repeater__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-repeater__item {
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+}
+
+.admin-repeater__item-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hb-light);
+}
+
+.admin-repeater__index {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hb-light);
+  color: var(--hb-natural);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-repeater__summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-repeater__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.admin-repeater__actions .admin-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-btn--danger {
+  color: #a3342b;
+  border-color: #f0c8c4;
+  background: #fff;
+}
+
+.admin-btn--danger:hover {
+  background: #fdf1f0;
+}
+
+.admin-empty--tight {
+  padding: 16px;
+  font-size: 13px;
+}
+
+.admin-form__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 10px;
+  padding: 14px 0;
+  background: #fff;
+  border-top: 1px solid var(--hb-border);
+}
+
+@media (max-width: 860px) {
+  .admin-span-two-thirds,
+  .admin-span-half,
+  .admin-span-third {
+    grid-column: span 12;
+  }
+}
+
+/* Daftar & zona bahaya ---------------------------------------------- */
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+}
+
+.admin-list__main {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.admin-list__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--hb-forest);
+  text-decoration: none;
+}
+
+.admin-list__title:hover {
+  text-decoration: underline;
+}
+
+.admin-list__meta {
+  margin: 4px 0 0;
+  color: var(--hb-ink-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-list__meta code {
+  font-size: 12px;
+  background: var(--hb-light);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+.admin-list__flags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-flag {
+  padding: 3px 9px;
+  background: var(--hb-light);
+  border-radius: 999px;
+  color: var(--hb-ink-2);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Paket yang baru terisi hero — perlu ditindaklanjuti. */
+.admin-flag--warn {
+  background: #fdeccd;
+  color: #8a5a00;
+}
+
+.admin-list__actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-notice {
+  margin: 0 0 18px;
+  padding: 12px 15px;
+  background: var(--hb-light);
+  border: 1px solid var(--hb-sage);
+  border-radius: 12px;
+  color: var(--hb-natural);
+  font-size: 14px;
+}
+
+.admin-danger-zone {
+  margin-top: 32px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #f0d3d0;
+  border-radius: 14px;
+}
+
+.admin-danger-zone h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #8c3229;
+}
+
+.admin-danger-zone .admin-hint {
+  margin-bottom: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pratinjau file yang baru dipilih (sebelum diunggah)                  */
+/* ------------------------------------------------------------------ */
+
+.admin-media-upload__row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.admin-picked {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--hb-border);
+}
+
+.admin-picked__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--hb-ink-2);
+}
+
+.admin-picked__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-picked__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 10px;
+}
+
+.admin-picked__img {
+  width: 100%;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--hb-light);
+}
+
+.admin-picked__name {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-picked__meta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--hb-ink-2);
+}
+
+.admin-progress {
+  position: relative;
+  height: 26px;
+  margin-top: 14px;
+  background: var(--hb-light);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.admin-progress__bar {
+  height: 100%;
+  background: var(--hb-forest);
+  transition: width 120ms linear;
+}
+
+.admin-progress__label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hb-ink);
+}
+
+.admin-media-upload__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-media-upload__actions .admin-hint {
+  margin: 0;
+}
+
+.admin-media-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--hb-forest);
+  border-radius: 999px;
+}
+
+.admin-media-card__thumb {
+  position: relative;
+}
+
+.admin-inline-form {
+  display: inline;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pemilih gambar                                                     */
+/* ------------------------------------------------------------------ */
+
+.admin-picker {
+  display: block;
+}
+
+.admin-linkbtn {
+  padding: 0;
+  font: inherit;
+  color: var(--hb-forest);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  cursor: pointer;
+}
+
+.admin-picker__empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hb-ink-2);
+}
+
+.admin-picker__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-picker__item {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 10px;
+}
+
+.admin-picker__thumb {
+  width: 68px;
+  height: 52px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--hb-light);
+}
+
+.admin-picker__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-picker__url {
+  font-size: 11px;
+  color: var(--hb-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-picker__tools {
+  display: flex;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.admin-picker__add {
+  display: flex;
+  align-items: center;
+}
+
+.admin-picker__modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(23 32 29 / 55%);
+}
+
+.admin-picker__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(920px, 100%);
+  max-height: 82vh;
+  padding: 16px;
+  background: var(--hb-bg);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.admin-picker__head {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-picker__head input {
+  flex: 1;
+  padding: 9px 12px;
+  font: inherit;
+  border: 1px solid var(--hb-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.admin-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 2px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.admin-picker__cell {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: #fff;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.admin-picker__cell.is-chosen {
+  border-color: var(--hb-forest);
+}
+
+.admin-picker__cell img {
+  display: block;
+  width: 100%;
+  height: 108px;
+  background: var(--hb-light);
+}
+
+.admin-picker__cell-name {
+  display: block;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--hb-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-picker__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--hb-forest);
+  border-radius: 999px;
+}
+
+.admin-picker__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--hb-ink-2);
+}
+
+@media (max-width: 860px) {
+  .admin-media-upload__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Popup pilihan (mis. kategori untuk paket baru)                     */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Bentuknya sengaja mengikuti `.admin-picker__*` di atas: keduanya overlay
+ * dengan panel di tengah, jadi terasa satu keluarga visual dan tidak perlu
+ * aturan dasar yang ditulis dua kali.
+ */
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(23 32 29 / 55%);
+}
+
+.admin-modal__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(560px, 100%);
+  max-height: 82vh;
+  padding: 16px;
+  background: var(--hb-bg);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.admin-modal__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-modal__head h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.admin-modal__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 2px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.admin-modal__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 14px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 10px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-modal__row:hover,
+.admin-modal__row:focus-visible {
+  border-color: var(--hb-forest);
+  background: var(--hb-light);
+}
+
+.admin-modal__row-main {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.admin-modal__row-main code {
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+.admin-modal__row-meta {
+  font-size: 12px;
+  color: var(--hb-ink-2);
+  white-space: nowrap;
+}
+
+.admin-modal__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-modal__panel--confirm {
+  width: min(420px, 100%);
+}
+
+.admin-modal__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--hb-ink);
+}
+
+.admin-modal__foot--end {
+  justify-content: flex-end;
+}
+
+/* ------------------------------------------------------------------ */
+/* Editor satu aset galeri: metadata + crop                            */
+/* ------------------------------------------------------------------ */
+
+.admin-editor {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.admin-editor__side {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-editor .admin-card h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.admin-crop__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  margin: 14px 0 12px;
+}
+
+.admin-crop__group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.admin-crop__zoom,
+.admin-crop__angle {
+  min-width: 44px;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Area kerja crop.
+ *
+ * Tingginya tetap (60vh) supaya gambar besar tidak membuat halaman jadi
+ * panjang sekali, dan kotaknya bisa digeser keluar area yang tidak terlihat
+ * lewat zoom.
+ */
+.admin-crop__frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 60vh;
+  min-height: 320px;
+  padding: 0;
+  background: var(--hb-light);
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+
+.admin-crop__canvas {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.admin-crop__canvas img {
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Kotak crop: area gelap di luar emphasise apa yang akan disimpan. */
+.admin-crop__box {
+  position: absolute;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 9999px rgb(23 32 29 / 45%);
+  cursor: move;
+}
+
+.admin-crop__handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border: 2px solid var(--hb-forest);
+  border-radius: 4px;
+}
+
+.admin-crop__handle--nw {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+
+.admin-crop__handle--ne {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+
+.admin-crop__handle--sw {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.admin-crop__handle--se {
+  bottom: -7px;
+  right: -7px;
+  cursor: nwse-resize;
+}
+
+.admin-crop__readout {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .admin-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-crop__frame {
+    height: 46vh;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Live editor (kategori, paket, beranda)
+ *
+ * Dua kolom: daftar field di kiri, preview di kanan. Kolom kiri dibuat
+ * lebih lebar dari biasanya karena form paket panjang, tapi ruang preview
+ * tetap dijaga supaya hasil edit bisa dibandingkan dengan halaman asli.
+ * ------------------------------------------------------------------------- */
+
+.live-editor {
+  display: grid;
+  grid-template-columns: minmax(320px, 30rem) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.live-editor__panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.live-editor__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+.live-editor__sections {
+  display: grid;
+  gap: 10px;
+}
+
+.live-editor .admin-form__footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--hb-bg);
+  padding-block: 10px;
+}
+
+/* Accordion section */
+
+.live-accordion {
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.live-accordion.is-focused {
+  border-color: var(--hb-forest);
+  box-shadow: 0 0 0 3px rgb(36 84 71 / 18%);
+}
+
+.live-accordion__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.live-accordion__head:hover {
+  background: var(--hb-light);
+}
+
+.live-accordion__num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  background: var(--hb-sage);
+  color: var(--hb-primary);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-accordion__title {
+  display: grid;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.live-accordion__title small {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+.live-accordion__caret {
+  color: var(--hb-ink-2);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.live-accordion__body {
+  padding: 4px 14px 16px;
+  border-top: 1px solid var(--hb-border);
+}
+
+/* Nomor field di dalam daftar */
+
+.admin-field__num {
+  margin-right: 6px;
+  color: var(--hb-forest);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Kolom preview */
+
+.live-editor__preview {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.live-preview__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.live-preview__badge {
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+.live-preview__devices {
+  display: inline-flex;
+  border: 1px solid var(--hb-border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.live-preview__devices button {
+  padding: 5px 12px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--hb-ink-2);
+}
+
+.live-preview__devices button.is-active {
+  background: var(--hb-forest);
+  color: #fff;
+}
+
+/* Kontrol pratinjau: zum + ganti perangkat + layar penuh. */
+
+.live-preview__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.live-preview__zoom {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--hb-border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.live-preview__zoom button {
+  padding: 5px 10px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--hb-ink);
+  cursor: pointer;
+}
+
+.live-preview__zoom button:hover:not(:disabled) {
+  background: var(--hb-sage);
+}
+
+.live-preview__zoom button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.live-preview__zoomval {
+  min-width: 54px;
+  border-left: 1px solid var(--hb-border) !important;
+  border-right: 1px solid var(--hb-border) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-preview__zoomfit {
+  font-size: 12px !important;
+}
+
+.live-preview__fullbtn {
+  padding: 5px 14px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--hb-ink);
+  cursor: pointer;
+}
+
+.live-preview__fullbtn:hover {
+  border-color: var(--hb-natural);
+}
+
+.live-preview__fullbtn.is-active {
+  background: var(--hb-forest);
+  border-color: var(--hb-forest);
+  color: #fff;
+}
+
+/*
+ * Mode layar penuh: pratinjau dilepas dari tata letak editor dan menutupi
+ * seluruh viewport (termasuk sidebar) supaya halaman bisa dinilai utuh.
+ * `position: fixed` di sini mengalahkan `.live-editor__preview { position:
+ * sticky }` maupun `position: static` dari media query (spesifisitas lebih
+ * tinggi), jadi tidak perlu `!important`.
+ */
+.live-editor__preview.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 22px 22px;
+  background: var(--hb-bg);
+  overflow: hidden;
+}
+
+.live-editor__preview.is-full .live-preview__frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/*
+ * `transform: scale()` bukan pilihan: preview harus memakai komponen publik
+ * yang sama, dan mengubah ukurannya lewat transform membuat proporsi font
+ * dan jarak tidak sama dengan halaman asli. Lebarnya yang dikecilkan, bukan
+ * skalanya.
+ */
+.live-preview__frame {
+  max-height: calc(100dvh - 96px);
+  overflow: auto;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+}
+
+.live-preview__frame.is-desktop .live-preview__surface {
+  min-width: 68rem;
+}
+
+.live-preview__frame.is-mobile .live-preview__surface {
+  max-width: 24rem;
+}
+
+.live-preview__surface {
+  /*
+   * Preview merender `<PublicShell>` sungguhan, dan shell itu memuat
+   * `.sticky-wa` dengan `position: fixed` yang di situs publik menempel ke
+   * viewport. Di dalam panel, itu berarti tombolnya melayang menutupi sidebar
+   * admin. Jadikan elemen ini acuan posisinya, lalu tombolnya dipindah ke
+   * `absolute` di bawah — posisinya di kanan bawah halaman tetap sama seperti
+   * di situs aslinya, hanya tidak lagi keluar dari panel.
+   */
+  position: relative;
+  background: #fff;
+}
+
+.live-preview__surface .hb2d1n .sticky-wa {
+  position: absolute;
+}
+
+/*
+ * Mode "Ponsel" hanya menyempitkan lebarnya, sedangkan `@media` di `legacy.css`
+ * membaca lebar viewport browser — yang di panel admin selalu lebar. Akibatnya
+ * lipatan yang berlaku di halaman asli tidak ikut berlaku di preview.
+ *
+ * Blok di bawah menyalin aturan itu dalam bentuk selektor, di-scope ke
+ * `.is-mobile` supaya situs publik tidak tersentuh. Hanya bagian yang benar-benar
+ * mengubah tata letak yang dicatat di sini; yang lain hanya mengubah ukuran
+ * bantalan atau jarak, dan pengaruhnya kecil.
+ *
+ * Catatan pemeliharaan: kalau `legacy.css` berubah, blok `.is-mobile` ini yang
+ * perlu ikut disesuaikan — terutama breakpoint jumlah kolom, karena itu yang
+ * paling terlihat beda.
+ */
+.live-preview__frame.is-mobile .hb2d1n .main-nav {
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  right: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fff;
+  padding: 16px 20px;
+  gap: 14px;
+  border-radius: 14px;
+  box-shadow: 0 16px 30px -14px rgba(22, 60, 50, 0.25);
+  border: 1px solid var(--hb-border);
+  display: none;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .main-nav.open {
+  display: flex;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .menu-toggle {
+  display: flex;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .hero {
+  min-height: 380px;
+  padding: calc(var(--hb-header-h) + 24px) 20px;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .hero-deco {
+  display: none;
+}
+
+.live-preview__frame.is-mobile .hb2d1n--home .hero,
+.live-preview__frame.is-mobile .hb2d1n--package .hero {
+  min-height: 420px;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .package-grid,
+.live-preview__frame.is-mobile .hb2d1n .trip-grid,
+.live-preview__frame.is-mobile .hb2d1n .type-grid,
+.live-preview__frame.is-mobile .hb2d1n--home .package-grid,
+.live-preview__frame.is-mobile .hb2d1n .trip-grid.cols-2,
+.live-preview__frame.is-mobile .hb2d1n .trip-grid.cols-3,
+.live-preview__frame.is-mobile .hb2d1n .trip-grid.cols-4,
+.live-preview__frame.is-mobile .hb2d1n .package-grid.cols-2,
+.live-preview__frame.is-mobile .hb2d1n .package-grid.cols-3,
+.live-preview__frame.is-mobile .hb2d1n .package-grid.cols-4,
+.live-preview__frame.is-mobile .hb2d1n .itin-grid,
+.live-preview__frame.is-mobile .hb2d1n .itin-grid.cols-2,
+.live-preview__frame.is-mobile .hb2d1n .itin-grid.cols-3,
+.live-preview__frame.is-mobile .hb2d1n .fasilitas-grid,
+.live-preview__frame.is-mobile .hb2d1n .benefit-grid,
+.live-preview__frame.is-mobile .hb2d1n--home .benefit-grid {
+  grid-template-columns: 1fr;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .gallery-grid,
+.live-preview__frame.is-mobile .hb2d1n .gallery-grid.cols-2,
+.live-preview__frame.is-mobile .hb2d1n .gallery-grid.cols-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.live-preview__frame.is-mobile .hb2d1n--home .testimonial-grid {
+  grid-template-columns: 1fr;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .package-card.featured {
+  grid-template-columns: 1fr;
+}
+
+/* Tabel harga tetap butuh lebar minimum; di layar sempit diganti scroll
+ * horizontal, persis seperti aturan legacy di `@media (max-width: 860px)`. */
+.live-preview__frame.is-mobile .hb2d1n .price-table-wrap {
+  overflow-x: auto;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .price-table {
+  min-width: 520px;
+  font-size: 12.5px;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .footer-top {
+  padding: 28px 24px 22px;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .footer-bottom {
+  padding: 16px 24px;
+  justify-content: center;
+  text-align: center;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .sticky-wa span.label {
+  display: none;
+}
+
+.live-preview__frame.is-mobile .hb2d1n .sticky-wa {
+  padding: 14px 16px;
+}
+
+/* Penanda section yang bisa diklik di preview */
+
+.live-section {
+  position: relative;
+  outline: 1px dashed rgb(36 84 71 / 45%);
+  outline-offset: -1px;
+  cursor: pointer;
+}
+
+.live-section:hover,
+.live-section.is-active {
+  outline: 2px solid var(--hb-forest);
+}
+
+.live-section__tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 1px 8px;
+  background: var(--hb-forest);
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 0 0 8px 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.live-section:hover .live-section__tag,
+.live-section.is-active .live-section__tag {
+  opacity: 1;
+}
+
+/*
+ * Pratinjau editor /admin/halaman.
+ *
+ * Preview halaman HTML adalah dua blok `.live-section` langsung di bawah
+ * permukaan preview (tanpa PublicShell pembungkus seperti editor lain),
+ * jadi perlu jarak antar blok. Selektor anak-langsung disengaja: pada
+ * editor lain blok preview berada DI DALAM `.hb2d1n`, bukan anak langsung
+ * permukaan, sehingga aturan ini tidak menyentuh mereka.
+ */
+.live-preview__surface > .live-section + .live-section {
+  margin-top: 14px;
+}
+
+/* Blok dokumen: chrome alamat ala peramban + iframe isi dokumen. */
+.hp-doc {
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hp-doc__chrome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  background: var(--hb-light);
+  border-bottom: 1px solid var(--hb-border);
+}
+
+.hp-doc__dots {
+  color: #b9c4bd;
+  font-size: 9px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.hp-doc__url {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 10px;
+  background: #fff;
+  border: 1px solid var(--hb-border);
+  border-radius: 999px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--hb-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hp-doc__frame {
+  display: block;
+  width: 100%;
+  height: min(70vh, 44rem);
+  border: 0;
+  background: #fff;
+}
+
+.hp-doc__empty {
+  margin: 0;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: var(--hb-ink-2);
+  font-size: 13px;
+  background: var(--hb-light);
+}
+
+/* Keterangan saat kartu tidak akan tampil di situs (belum tayang / belum dipilih). */
+.hp-note {
+  margin: 0;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--hb-ink-2);
+  font-size: 13px;
+  background: var(--hb-light);
+  border: 1px dashed var(--hb-border);
+  border-radius: 12px;
+}
+
+/* Matriks harga */
+
+.admin-matrix__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.admin-matrix__cell {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+/* Daftar paket */
+
+.admin-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-search .admin-input {
+  flex: 1 1 16rem;
+}
+
+.admin-group {
+  margin-bottom: 24px;
+}
+
+.admin-group__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.admin-group__head h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.admin-list__heading {
+  margin: 28px 0 10px;
+  font-size: 15px;
+}
+
+@media (max-width: 1100px) {
+  .live-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .live-editor__preview {
+    position: static;
+  }
+
+  .live-preview__frame {
+    max-height: 70dvh;
+  }
+
+  .live-preview__frame.is-desktop .live-preview__surface {
+    min-width: 0;
+  }
+}

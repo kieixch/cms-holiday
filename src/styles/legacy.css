@@ -1,0 +1,1413 @@
+/* -------------------------------------------------------------------------
+ * Stylesheet hasil migrasi dari <style> inline WordPress.
+ *
+ * Dibuat oleh scripts/merge-css.mjs - jangan diedit manual, ubah script-nya.
+ *
+ * .hb2d1n            : prefix yang sama dengan situs lama
+ * .hb2d1n--home      : hanya beranda
+ * .hb2d1n--category  : halaman listing kategori (kartu paket)
+ * .hb2d1n--opentrip  : listing Open Trip (kartu rute + pill fasilitas)
+ * .hb2d1n--package   : halaman detail paket (itinerary, fasilitas, harga, galeri)
+ *
+ * Font dimuat sendiri lewat next/font (src/app/layout.tsx), jadi nama famili
+ * di sini memakai var(--font-poppins) dan var(--font-baloo-2).
+ * ---------------------------------------------------------------------- */
+
+/* ===== DASAR (font, body, keyframes) ===== */
+@keyframes hb2d1n-pulse {
+0%, 100% { box-shadow: 0 10px 25px -8px rgba(20,140,80,0.7); }
+    50% { box-shadow: 0 10px 30px -4px rgba(20,140,80,0.9); }
+}
+
+/* ===== KOMPONEN & SEKSI (dipakai bersama) ===== */
+.hb2d1n * {
+box-sizing: border-box;
+}
+.hb2d1n {
+font-family: var(--font-poppins), sans-serif;
+    color: #0B3D2E;
+    line-height: 1.55;
+    overflow-x: hidden;
+    background: #fff;
+}
+.hb2d1n .container {
+max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+/* ===== BRAND LOGO INTEGRATED (OFFICIAL SVG STYLE) ===== */
+.hb2d1n .brand-logo-wrap {
+display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.hb2d1n .brand-logo-wrap svg {
+display: block;
+    height: 48px;
+    width: auto;
+}
+/* ===== HEADER ===== */
+.hb2d1n .site-header {
+position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #EAF6F0;
+}
+.hb2d1n .header-inner {
+display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 20px;
+    position: relative;
+}
+.hb2d1n .main-nav {
+display: flex;
+    align-items: center;
+    gap: 22px;
+    flex: 1;
+    justify-content: flex-end;
+}
+.hb2d1n .main-nav a {
+color: #06402E;
+    font-weight: 600;
+    font-size: 13.5px;
+    text-decoration: none;
+    transition: color .2s ease;
+    white-space: nowrap;
+}
+.hb2d1n .main-nav a:hover {
+color: #0EA572;
+}
+.hb2d1n .menu-toggle {
+display: none;
+    background: #E6FBF3;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #06402E;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+}
+/* ===== HERO (tanpa foto) ===== */
+.hb2d1n .hero {
+position: relative;
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 16px auto;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 64px 24px;
+    background: linear-gradient(135deg,#0EA572,#2dd4bf 55%,#FFD23F);
+}
+.hb2d1n .hero::before {
+content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 25%, rgba(255,255,255,0.28), transparent 42%),
+      radial-gradient(circle at 85% 75%, rgba(255,255,255,0.2), transparent 45%);
+}
+.hb2d1n .hero-deco {
+position: absolute;
+    opacity: 0.16;
+    pointer-events: none;
+    line-height: 1;
+}
+.hb2d1n .hero-deco-1 {
+top: 6%; left: 5%; font-size: 92px; transform: rotate(-14deg);
+}
+.hb2d1n .hero-deco-2 {
+bottom: 6%; left: 10%; font-size: 64px; transform: rotate(8deg);
+}
+.hb2d1n .hero-deco-3 {
+top: 10%; right: 7%; font-size: 80px; transform: rotate(12deg);
+}
+.hb2d1n .hero-deco-4 {
+bottom: 8%; right: 9%; font-size: 70px; transform: rotate(-10deg);
+}
+.hb2d1n .hero-content {
+position: relative;
+    z-index: 1;
+    max-width: 680px;
+}
+.hb2d1n .hero-badges {
+display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+.hb2d1n .badge {
+background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.45);
+    backdrop-filter: blur(6px);
+    color: #06402E;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 999px;
+}
+.hb2d1n .hero h1 {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: clamp(34px, 6vw, 58px);
+    font-weight: 800;
+    margin: 0 0 12px;
+    line-height: 1.1;
+    color: #06402E;
+    text-shadow: 0 2px 16px rgba(255,255,255,0.35);
+}
+.hb2d1n .hero h1 span {
+color: #fff;
+    -webkit-text-stroke: 2px #06402E;
+}
+.hb2d1n .hero p {
+font-size: 16px;
+    color: #06402E;
+    opacity: 0.9;
+    margin: 0 auto 24px;
+    max-width: 560px;
+    font-weight: 500;
+}
+.hb2d1n .hero-cta {
+display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+/* ===== STATS BAR ===== */
+.hb2d1n .stats-bar {
+position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 28px;
+    background: rgba(6,64,46,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(6px);
+    border-radius: 18px;
+    padding: 18px 28px;
+}
+.hb2d1n .stat-item {
+text-align: center;
+    min-width: 100px;
+}
+.hb2d1n .stat-item .num {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #06402E;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.4);
+}
+.hb2d1n .stat-item .lbl {
+font-size: 12px;
+    font-weight: 600;
+    color: #06402E;
+    opacity: 0.85;
+}
+/* ===== BUTTONS ===== */
+.hb2d1n .btn {
+display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease;
+    border: none;
+    cursor: pointer;
+}
+.hb2d1n .btn:hover {
+transform: translateY(-3px);
+}
+.hb2d1n .btn-primary {
+background: linear-gradient(135deg,#25D366,#1AA84A);
+    color: #fff;
+    box-shadow: 0 10px 25px -8px rgba(20,140,80,0.7);
+}
+.hb2d1n .btn-ghost {
+background: rgba(255,255,255,0.35);
+    color: #06402E;
+    border: 1.5px solid rgba(6,64,46,0.25);
+    backdrop-filter: blur(6px);
+}
+.hb2d1n .btn-ghost:hover {
+background: rgba(255,255,255,0.55);
+}
+.hb2d1n .btn-block {
+background: linear-gradient(135deg,#0EA572,#0c8f60);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 10px 22px -10px rgba(14,165,114,0.6);
+    font-size: 13.5px;
+    padding: 12px 22px;
+}
+/* ===== SECTION HEADINGS ===== */
+.hb2d1n .section {
+padding: 50px 0;
+}
+.hb2d1n .section-tag {
+display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #0EA572;
+    background: #E6FBF3;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+}
+.hb2d1n .section-title {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 800;
+    margin: 0 0 8px;
+    color: #06402E;
+}
+.hb2d1n .section-title .accent {
+color: #FF9F1C;
+}
+.hb2d1n .section-desc {
+color: #4B6358;
+    max-width: 620px;
+    margin-bottom: 32px;
+    font-size: 15px;
+}
+/* ===== TYPE GRID (pilihan tipe trip) ===== */
+.hb2d1n .type-grid {
+display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.hb2d1n .type-card {
+background: #fff;
+    border: 1px solid #EAF6F0;
+    border-radius: 22px;
+    box-shadow: 0 12px 30px -18px rgba(6,64,46,0.22);
+    padding: 28px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-decoration: none;
+    color: #0B3D2E;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+.hb2d1n .type-card:hover {
+transform: translateY(-4px);
+    box-shadow: 0 18px 36px -16px rgba(6,64,46,0.3);
+}
+.hb2d1n .type-card .type-icon {
+width: 60px;
+    height: 60px;
+    margin: 0 auto 4px;
+    border-radius: 18px;
+    background: linear-gradient(135deg,#CFF6E4,#7EE0B8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+.hb2d1n .type-card h3 {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+    color: #06402E;
+}
+.hb2d1n .type-card p {
+font-size: 13.5px;
+    color: #4B6358;
+    margin: 0;
+    flex: 1;
+}
+.hb2d1n .type-card .type-price {
+font-size: 13px;
+    font-weight: 700;
+    color: #0EA572;
+    background: #E6FBF3;
+    border-radius: 999px;
+    padding: 6px 14px;
+    align-self: center;
+}
+.hb2d1n .type-card .type-link {
+font-size: 13.5px;
+    font-weight: 700;
+    color: #FF9F1C;
+}
+.hb2d1n .package-card {
+background: #fff;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px -16px rgba(6,64,46,0.25);
+    border: 1px solid #EAF6F0;
+    display: flex;
+    flex-direction: column;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+.hb2d1n .package-card:hover {
+transform: translateY(-4px);
+    box-shadow: 0 18px 36px -16px rgba(6,64,46,0.3);
+}
+.hb2d1n .package-card .package-img {
+position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+.hb2d1n .package-card .package-img img {
+width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .4s ease;
+}
+.hb2d1n .package-card:hover .package-img img {
+transform: scale(1.06);
+}
+.hb2d1n .package-card .package-loc {
+position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(255,255,255,0.92);
+    color: #06402E;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 2;
+}
+.hb2d1n .package-card .package-body {
+padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+.hb2d1n .package-card .package-highlight {
+font-size: 12.5px;
+    color: #2C4A3B;
+    background: #F4FFF9;
+    border: 1px solid #E6FBF3;
+    border-radius: 12px;
+    padding: 10px 12px;
+    line-height: 1.4;
+}
+.hb2d1n .package-card .package-price {
+margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px dashed #EAF6F0;
+}
+.hb2d1n .package-card .package-price .label {
+display: block;
+    font-size: 12px;
+    color: #4B6358;
+    margin-bottom: 2px;
+}
+.hb2d1n .package-card .package-price .price span {
+font-size: 13px;
+    font-weight: 600;
+    color: #4B6358;
+}
+/* ===== BENEFIT GRID (kenapa pilih kami) ===== */
+.hb2d1n .benefit-grid {
+display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+.hb2d1n .benefit-card {
+background: linear-gradient(160deg,#E6FBF3,#F4FFF9);
+    border: 1px solid #BFE9D6;
+    border-radius: 20px;
+    padding: 22px 18px;
+    text-align: center;
+}
+.hb2d1n .benefit-card .benefit-icon {
+width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    border-radius: 16px;
+    background: linear-gradient(135deg,#CFF6E4,#7EE0B8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+.hb2d1n .benefit-card h4 {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: 15.5px;
+    margin: 0 0 6px;
+    color: #06402E;
+}
+.hb2d1n .benefit-card p {
+font-size: 13px;
+    color: #4B6358;
+    margin: 0;
+}
+/* ===== TESTIMONIAL GRID ===== */
+.hb2d1n .testimonial-grid {
+display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.hb2d1n .testimonial-card {
+background: #F4FFF9;
+    border: 1px solid #E6FBF3;
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.hb2d1n .testimonial-card .stars {
+color: #FF9F1C;
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+.hb2d1n .testimonial-card .quote {
+font-size: 13.5px;
+    color: #2C4A3B;
+    margin: 0;
+    font-style: italic;
+    flex: 1;
+}
+.hb2d1n .testimonial-card .author {
+font-family: var(--font-baloo-2), sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #06402E;
+}
+.hb2d1n .testimonial-card .author span {
+display: block;
+    font-family: var(--font-poppins), sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    color: #4B6358;
+}
+/* ===== CTA BANNER ===== */
+.hb2d1n .cta-banner {
+background: linear-gradient(135deg,#0EA572,#2dd4bf 60%,#FFD23F);
+    border-radius: 28px;
+    padding: 46px 32px;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.hb2d1n .cta-banner::after {
+content: "🌴🔥🏖️";
+    position: absolute;
+    font-size: 90px;
+    opacity: 0.12;
+    right: -10px;
+    bottom: -20px;
+    letter-spacing: 20px;
+}
+.hb2d1n .cta-banner h2 {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: clamp(24px,4vw,34px);
+    margin: 0 0 10px;
+    position: relative;
+    z-index: 1;
+}
+.hb2d1n .cta-banner p {
+margin: 0 0 22px;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+}
+.hb2d1n .cta-banner .btn-primary {
+position: relative;
+    z-index: 1;
+    background: #fff;
+    color: #0B7A4F;
+    box-shadow: 0 10px 25px -8px rgba(0,0,0,0.25);
+}
+/* ===== FOOTER ===== */
+.hb2d1n .site-footer {
+position: relative;
+    background: linear-gradient(160deg, #06402E, #0B3D2E 60%, #0c4d36);
+    color: #E6FBF3;
+    border-radius: 28px;
+    margin: 0 auto 16px;
+    padding: 0;
+    overflow: hidden;
+}
+.hb2d1n .site-footer::before {
+content: "";
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,210,63,0.18), transparent 70%);
+}
+.hb2d1n .site-footer::after {
+content: "";
+    position: absolute;
+    bottom: -100px;
+    left: -60px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,212,191,0.16), transparent 70%);
+}
+.hb2d1n .footer-top {
+position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 36px 36px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.hb2d1n .footer-top h3 {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: 24px;
+    margin: 0 0 6px;
+    color: #fff;
+}
+.hb2d1n .footer-top p {
+margin: 0;
+    font-size: 13.5px;
+    color: #BFE9D6;
+    max-width: 420px;
+}
+.hb2d1n .footer-logo-wrap {
+margin-bottom: 12px;
+}
+.hb2d1n .footer-logo-wrap svg {
+display: block;
+    height: 54px;
+    width: auto;
+}
+.hb2d1n .footer-social {
+display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.hb2d1n .footer-social a {
+display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background .2s ease, transform .2s ease;
+}
+.hb2d1n .footer-social a:hover {
+background: rgba(255,210,63,0.2);
+    transform: translateY(-2px);
+}
+.hb2d1n .footer-bottom {
+position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #9FD9C2;
+    padding: 18px 36px;
+}
+.hb2d1n .footer-bottom .heart {
+color: #FF9F1C;
+}
+/* ===== STICKY WA BUTTON ===== */
+.hb2d1n .sticky-wa {
+position: fixed;
+    bottom: 22px;
+    right: 22px;
+    z-index: 999;
+    background: linear-gradient(135deg,#25D366,#1AA84A);
+    color: #fff;
+    border-radius: 999px;
+    padding: 14px 22px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    box-shadow: 0 10px 25px -8px rgba(20,140,80,0.7);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: hb2d1n-pulse 2.4s infinite;
+}
+/* ===== BRAND LOGO (icon + 2 baris teks) ===== */
+.hb2d1n .brand-logo {
+display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.hb2d1n .brand-logo .logo-icon {
+width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: linear-gradient(135deg,#FFE9B0,#FFD23F);
+    flex-shrink: 0;
+}
+.hb2d1n .brand-logo .logo-text {
+display: flex;
+    flex-direction: column;
+    font-family: var(--font-baloo-2), sans-serif;
+    line-height: 1.15;
+}
+.hb2d1n .brand-logo .logo-text .l1 {
+font-size: 16px;
+    font-weight: 800;
+    background: linear-gradient(90deg,#0EA572,#2dd4bf);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.hb2d1n .brand-logo .logo-text .l2 {
+font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #06402E;
+}
+/* ===== TRIP GRID (daftar rute Open Trip berdesain kartu foto) ===== */
+.hb2d1n .trip-grid {
+display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.hb2d1n .package-card.featured {
+grid-column: 1 / -1;
+    background: linear-gradient(160deg,#E6FBF3,#F4FFF9);
+    border: 1.5px solid #BFE9D6;
+    display: grid;
+    grid-template-columns: 4fr 5fr;
+}
+.hb2d1n .package-card.featured .package-img {
+aspect-ratio: auto;
+    height: 100%;
+}
+.hb2d1n .package-card.featured h3 {
+font-size: 22px;
+}
+.hb2d1n .trip-facilities {
+display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.hb2d1n .facility-pill {
+font-size: 11.5px;
+    font-weight: 600;
+    color: #4B6358;
+    background: #F4FFF9;
+    border: 1px solid #EAF6F0;
+    padding: 5px 10px;
+    border-radius: 999px;
+}
+.hb2d1n .package-card .package-days {
+display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #FFF;
+    border: 1px solid #BFE9D6;
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+.hb2d1n .package-card .package-days .day-row {
+font-size: 12.5px;
+    color: #2C4A3B;
+    line-height: 1.4;
+}
+.hb2d1n .package-card .package-days .day-row strong {
+color: #0EA572;
+    font-weight: 700;
+}
+.hb2d1n .price-item .label {
+display: block;
+    font-size: 12px;
+    color: #4B6358;
+    margin-bottom: 2px;
+}
+.hb2d1n .price-item .price {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #06402E;
+}
+.hb2d1n .price-item .price span {
+font-size: 12px;
+    font-weight: 600;
+    color: #4B6358;
+}
+/* ===== NOTE BOX ===== */
+.hb2d1n .note-box {
+display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #FFF7E6;
+    border: 1px solid #FFE6B0;
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 28px;
+    font-size: 13.5px;
+    color: #6B4E12;
+}
+.hb2d1n .note-box .note-icon {
+font-size: 22px; flex-shrink: 0;
+}
+.hb2d1n .brand-logo.on-dark .logo-text .l1 {
+background: linear-gradient(90deg,#FFD23F,#FF9F1C);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.hb2d1n .brand-logo.on-dark .logo-text .l2 {
+color: #CDEFE0;
+}
+.hb2d1n .itin-card {
+background: #fff;
+    border-radius: 22px;
+    padding: 26px;
+    box-shadow: 0 12px 30px -16px rgba(6,64,46,0.25);
+    border: 1px solid #EAF6F0;
+}
+.hb2d1n .itin-card-head {
+display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.hb2d1n .itin-card-head .emoji {
+font-size: 28px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg,#FFE9B0,#FFD23F);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+.hb2d1n .itin-card-head h3 {
+margin: 0;
+    font-family: var(--font-baloo-2), sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #06402E;
+}
+.hb2d1n .itin-card-head span {
+display: block;
+    font-size: 12px;
+    color: #0EA572;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+.hb2d1n .timeline {
+position: relative;
+    margin: 0;
+    padding-left: 22px;
+    border-left: 2px dashed #BFE9D6;
+}
+.hb2d1n .timeline li:last-child {
+padding-bottom: 0;
+}
+.hb2d1n .timeline li::before {
+content: "";
+    position: absolute;
+    left: -27px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #0EA572;
+    border: 3px solid #D6F5E7;
+}
+.hb2d1n .timeline li .time {
+font-weight: 800;
+    color: #06402E;
+    margin-right: 6px;
+}
+/* ===== FASILITAS ===== */
+.hb2d1n .fasilitas-grid {
+display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+.hb2d1n .fas-card {
+border-radius: 22px;
+    padding: 26px;
+}
+.hb2d1n .fas-card.include {
+background: linear-gradient(160deg,#E6FBF3,#F4FFF9);
+    border: 1px solid #BFE9D6;
+}
+.hb2d1n .fas-card.exclude {
+background: linear-gradient(160deg,#FFF1F0,#FFF8F6);
+    border: 1px solid #FFD7D2;
+}
+.hb2d1n .fas-card h3 {
+font-family: var(--font-baloo-2), sans-serif;
+    margin: 0 0 16px;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.hb2d1n .fas-card ul {
+margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+}
+.hb2d1n .fas-card li {
+display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14.5px;
+    color: #2C4A3B;
+}
+.hb2d1n .fas-icon {
+flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    position: relative;
+}
+.hb2d1n .fas-card.include .fas-icon {
+background: linear-gradient(135deg,#CFF6E4,#7EE0B8);
+}
+.hb2d1n .fas-card.exclude .fas-icon {
+background: linear-gradient(135deg,#FFE0DC,#FFB3A8);
+}
+.hb2d1n .fas-icon::after {
+position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+    border: 2px solid #fff;
+}
+.hb2d1n .fas-card.include .fas-icon::after {
+content: "✓";
+    background: #0EA572;
+}
+.hb2d1n .fas-card.exclude .fas-icon::after {
+content: "✕";
+    background: #FF6B6B;
+}
+/* ===== PRICING ===== */
+.hb2d1n .price-table-wrap {
+background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 12px 30px -16px rgba(6,64,46,0.25);
+    border: 1px solid #EAF6F0;
+    overflow: hidden;
+}
+.hb2d1n .price-table {
+width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.hb2d1n .price-table thead th {
+background: linear-gradient(135deg,#0EA572,#0c8f60);
+    color: #fff;
+    font-family: var(--font-baloo-2), sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 16px 14px;
+    text-align: center;
+}
+.hb2d1n .price-table thead th:first-child {
+text-align: left; border-radius: 0;
+}
+.hb2d1n .price-table tbody td {
+padding: 13px 14px;
+    text-align: center;
+    border-bottom: 1px solid #F0F5F2;
+    font-weight: 600;
+    color: #2C4A3B;
+}
+.hb2d1n .price-table tbody td:first-child {
+text-align: left;
+    font-weight: 700;
+    color: #06402E;
+}
+.hb2d1n .price-table tbody td:first-child::before {
+content: "👥 ";
+}
+.hb2d1n .price-table tbody tr:nth-child(odd) {
+background: #FAFFFC;
+}
+.hb2d1n .price-table tbody tr:hover {
+background: #EAFBF2;
+}
+.hb2d1n .price-table .price-tag {
+display: inline-block;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-weight: 800;
+}
+.hb2d1n .price-table td.col-driver .price-tag {
+background: #E6FBF3; color: #0B7A4F;
+}
+.hb2d1n .price-table td.col-photo .price-tag {
+background: #FFF4E0; color: #C97A00;
+}
+.hb2d1n .price-note {
+font-size: 13px;
+    color: #4B6358;
+    margin-top: 14px;
+    text-align: center;
+}
+.hb2d1n .gallery-item {
+position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px -18px rgba(6,64,46,0.35);
+    aspect-ratio: 1 / 1;
+}
+.hb2d1n .gallery-item img {
+width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+.hb2d1n .gallery-item:hover img {
+transform: scale(1.06);
+}
+.hb2d1n .timeline li :last-child {
+padding-bottom: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1080px) {
+.hb2d1n .main-nav {
+      position: absolute;
+      top: 100%;
+      left: 12px;
+      right: 12px;
+      flex-direction: column;
+      align-items: flex-start;
+      background: #fff;
+      padding: 16px 20px;
+      gap: 14px;
+      border-radius: 14px;
+      box-shadow: 0 16px 30px -14px rgba(6,64,46,0.25);
+      border: 1px solid #EAF6F0;
+      display: none;
+    }
+    .hb2d1n .main-nav.open { display: flex; }
+    .hb2d1n .main-nav a { font-size: 14.5px; }
+    .hb2d1n .menu-toggle { display: flex; }
+}
+@media (max-width: 860px) {
+.hb2d1n .hero { min-height: 380px; padding: 48px 20px; }
+    .hb2d1n .benefit-grid { grid-template-columns: repeat(2, 1fr); }
+    .hb2d1n .footer-top { padding: 28px 24px 22px; }
+    .hb2d1n .footer-bottom { padding: 16px 24px; justify-content: center; text-align: center; }
+}
+@media (max-width: 560px) {
+.hb2d1n .hero-deco { display: none; }
+    .hb2d1n .benefit-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 500px) {
+.hb2d1n .hero-content { padding: 0 6px; }
+    .hb2d1n .sticky-wa span.label { display: none; }
+    .hb2d1n .sticky-wa { padding: 14px 16px; }
+}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 980px) {
+.hb2d1n .trip-grid { grid-template-columns: repeat(2, 1fr); }
+    .hb2d1n .package-card.featured { grid-template-columns: 1fr; }
+    .hb2d1n .package-card.featured .package-img { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 680px) {
+.hb2d1n .trip-grid { grid-template-columns: 1fr; }
+}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 960px) {
+.hb2d1n .package-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+.hb2d1n .package-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+.hb2d1n .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 480px) {
+.hb2d1n .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1000px) {
+.hb2d1n .itin-grid {
+      grid-template-columns: 1fr;
+    }
+}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 860px) {
+.hb2d1n--home .hero {
+min-height: 420px; padding: 48px 20px;
+}
+.hb2d1n--home .type-grid {
+grid-template-columns: repeat(2, 1fr);
+}
+.hb2d1n--home .package-grid {
+grid-template-columns: repeat(2, 1fr);
+}
+.hb2d1n--home .benefit-grid {
+grid-template-columns: repeat(2, 1fr);
+}
+.hb2d1n--home .testimonial-grid {
+grid-template-columns: 1fr;
+}
+.hb2d1n--home .footer-top {
+padding: 28px 24px 22px;
+}
+.hb2d1n--home .footer-bottom {
+padding: 16px 24px; justify-content: center; text-align: center;
+}
+}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 860px) {
+.hb2d1n--package .fasilitas-grid {
+grid-template-columns: 1fr;
+}
+.hb2d1n--package .hero {
+min-height: 380px; padding: 48px 20px;
+}
+.hb2d1n--package .price-table {
+font-size: 12.5px;
+}
+.hb2d1n--package .price-table thead th, .hb2d1n--package .price-table tbody td {
+padding: 10px 8px;
+}
+.hb2d1n--package .footer-top {
+padding: 28px 24px 22px;
+}
+.hb2d1n--package .footer-bottom {
+padding: 16px 24px; justify-content: center; text-align: center;
+}
+}
+@media (max-width: 560px) {
+.hb2d1n--home .hero-deco {
+display: none;
+}
+.hb2d1n--home .type-grid {
+grid-template-columns: 1fr;
+}
+.hb2d1n--home .package-grid {
+grid-template-columns: 1fr;
+}
+.hb2d1n--home .benefit-grid {
+grid-template-columns: 1fr;
+}
+.hb2d1n--home .stats-bar {
+gap: 14px; padding: 16px 18px;
+}
+.hb2d1n--home .stat-item {
+min-width: 80px;
+}
+.hb2d1n--home .stat-item .num {
+font-size: 21px;
+}
+}
+@media (max-width: 560px) {
+.hb2d1n--package .hero-deco {
+display: none;
+}
+}
+
+/* ===== KHUSUS: HOME ===== */
+/* ===== HERO (tanpa foto) ===== */
+.hb2d1n--home .hero {
+position: relative;
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 16px auto;
+    min-height: 460px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 64px 24px;
+    background: linear-gradient(135deg,#0EA572,#2dd4bf 55%,#FFD23F);
+}
+.hb2d1n--home .hero-content {
+position: relative;
+    z-index: 1;
+    max-width: 720px;
+}
+.hb2d1n--home .hero h1 {
+font-family: var(--font-baloo-2), sans-serif;
+    font-size: clamp(34px, 6vw, 60px);
+    font-weight: 800;
+    margin: 0 0 12px;
+    line-height: 1.1;
+    color: #06402E;
+    text-shadow: 0 2px 16px rgba(255,255,255,0.35);
+}
+.hb2d1n--home .hero p {
+font-size: 16px;
+    color: #06402E;
+    opacity: 0.9;
+    margin: 0 auto 24px;
+    max-width: 580px;
+    font-weight: 500;
+}
+.hb2d1n--home .hero-cta {
+display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 28px;
+}
+
+/* ===== KHUSUS: OPENTRIP ===== */
+.hb2d1n--opentrip .package-card .package-body {
+padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+.hb2d1n--opentrip .package-card .package-price {
+margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed #EAF6F0;
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+
+/* ===== KHUSUS: CATEGORY ===== */
+.hb2d1n--category .btn-block {
+background: linear-gradient(135deg,#0EA572,#0c8f60);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 10px 22px -10px rgba(14,165,114,0.6);
+}
+.hb2d1n--category .package-card .package-loc {
+position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(255,255,255,0.92);
+    color: #06402E;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.hb2d1n--category .package-card .package-body {
+padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+.hb2d1n--category .package-card .package-days {
+display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #F4FFF9;
+    border: 1px solid #E6FBF3;
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+/* =========================================================================
+ * NILAI BAKU
+ * Beberapa file HTML lama punya nilai yang berbeda-beda untuk selector yang
+ * sama (selisih 0.5-2px, tidak disengaja). Di sini diseragamkan ke nilai yang
+ * dipakai mayoritas halaman. Ubah nilai di scripts/merge-css.mjs, bukan di sini.
+ * ========================================================================= */
+
+.hb2d1n .gallery-grid {
+display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.hb2d1n .timeline li {
+position: relative;
+  list-style: none;
+  padding-bottom: 16px;
+  font-size: 13.5px;
+  color: #2C4A3B;
+}
+.hb2d1n .package-card .package-tag {
+display: inline-block;
+  align-self: flex-start;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #0EA572;
+  background: #E6FBF3;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.hb2d1n .package-card h3 {
+font-family: var(--font-baloo-2), sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #06402E;
+}
+.hb2d1n .package-card .package-rating {
+font-size: 13px;
+  font-weight: 600;
+  color: #FF9F1C;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hb2d1n .package-card .package-price .price {
+font-family: var(--font-baloo-2), sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #06402E;
+}
+
+/* Jumlah kolom TIDAK bisa ditebak dari isi: di situs asli halaman 3D2N memakai
+   2 kolom meski hanya 2 paket, halaman 4D3N memakai 3 kolom meski 1 paket,
+   dan paket Djawatan memakai galeri 2 kolom. Nilainya diambil dari CSS tiap
+   halaman oleh scripts/extract-css.mjs, disimpan di database, lalu ditulis
+   sebagai kelas cols-N di sini. */
+.hb2d1n .package-grid { display: grid; gap: 20px; }
+.hb2d1n .package-grid.cols-1 { grid-template-columns: 1fr; }
+.hb2d1n .package-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.hb2d1n .package-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.hb2d1n .package-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Listing Open Trip memakai kelas .trip-grid, bukan .package-grid. */
+.hb2d1n .trip-grid.cols-1 { grid-template-columns: 1fr; }
+.hb2d1n .trip-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.hb2d1n .trip-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.hb2d1n .trip-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.hb2d1n .itin-grid { display: grid; gap: 24px; grid-template-columns: 1fr; max-width: 720px; margin: 0 auto; }
+.hb2d1n .itin-grid.cols-1 { grid-template-columns: 1fr; max-width: 720px; margin: 0 auto; }
+.hb2d1n .itin-grid.cols-2 { grid-template-columns: repeat(2, 1fr); max-width: none; margin: 0; }
+.hb2d1n .itin-grid.cols-3 { grid-template-columns: repeat(3, 1fr); max-width: none; margin: 0; }
+
+.hb2d1n .gallery-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.hb2d1n .gallery-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ===== RESPONSIVE: GRID DENGAN JUMLAH KOLOM DINAMIS =====
+ * Blok ini harus diletakkan paling akhir, dan itu disengaja.
+ *
+ * Aturan .cols-N (dan .gallery-grid di blok NILAI BAKU) ditulis SETELAH
+ * media query legacy, padahal specificity-nya lebih tinggi:
+ *
+ *   .hb2d1n .package-grid                 -> (0,2,0)  <- media query
+ *   .hb2d1n .package-grid.cols-3          -> (0,3,0)  <- menang
+ *
+ * Akibatnya breakpoint legacy tidak berlaku sama sekali: di HP 375px grid
+ * paket tetap 3 kolom, kartu jadi ~110px dan halaman gagal total. Aturan di
+ * bawah memakai specificity yang sama dan muncul belakangan, jadi lipatan
+ * yang dimaksud media query legacy akhirnya berlaku lagi.
+ *
+ * Breakpoint-nya sengaja disamakan dengan angka yang sudah dipakai media
+ * query legacy, bukan angka baru. */
+@media (max-width: 1000px) {
+  .hb2d1n .itin-grid,
+  .hb2d1n .itin-grid.cols-2,
+  .hb2d1n .itin-grid.cols-3 {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+}
+@media (max-width: 980px) {
+  .hb2d1n .trip-grid.cols-3,
+  .hb2d1n .trip-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 960px) {
+  .hb2d1n .package-grid.cols-3,
+  .hb2d1n .package-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .hb2d1n .gallery-grid,
+  .hb2d1n .gallery-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 680px) {
+  .hb2d1n .trip-grid.cols-2,
+  .hb2d1n .trip-grid.cols-3,
+  .hb2d1n .trip-grid.cols-4 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .hb2d1n .package-grid.cols-2,
+  .hb2d1n .package-grid.cols-3,
+  .hb2d1n .package-grid.cols-4,
+  .hb2d1n--home .package-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .hb2d1n .gallery-grid,
+  .hb2d1n .gallery-grid.cols-2,
+  .hb2d1n .gallery-grid.cols-4 { grid-template-columns: 1fr; }
+}
+
+/* Tabel harga punya banyak kolom, jadi di layar sempit tidak bisa dilipat
+ * menjadi kartu tanpa mengubah strukturnya. overflow:hidden bawaan legacy
+ * membuat tabel terpotong dan harga jadi tidak terbaca; di sini diganti
+ * scroll horizontal. Desktop tidak terpengaruh. */
+@media (max-width: 860px) {
+  .hb2d1n .price-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hb2d1n .price-table {
+    min-width: 520px;
+  }
+}
+

@@ -1,26 +1,129 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ---------------------------------------------------------------------------
+ * Gaya situs.
+ *
+ * Urutan penting:
+ *   1. preflight Tailwind
+ *   2. src/styles/legacy.css - hasil migrasi dari <style> inline WordPress,
+ *      ditulis oleh scripts/merge-css.mjs. Semua selector memakai prefix
+ *      .hb2d1n sama seperti situs lama, jadi tidak menabrak preflight.
+ *   3. gaya khusus panel admin (/admin)
+ * --------------------------------------------------------------------------- */
+@import "../styles/legacy.css";
+/* Palet dominasi hijau (override di atas legacy.css, yang tidak boleh diedit
+   manual). Dipakai sebagai satu-satunya sumber perawatan warna di masa depan. */
+@import "../styles/green-palette.css";
+@import "./admin.css";
+
+/* Gambar opsional pada kartu tipe trip di beranda.
+   Hanya dirender kalau `Category.cardImage` diisi, jadi halaman yang tidak
+   memakai gambar tetap persis sama dengan markup legacy. */
+.type-card__image {
+  display: block;
+  width: 100%;
+  height: 168px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 12px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Pembatas bergelombang antar seksi: tepi bawah hero dipotong gelombang
+   berwarna latar halaman, jadi batas hero dengan seksi berikutnya tidak lurus.
+   Murni dekoratif: tidak menambah teks, tidak menangkap klik, dan memakai kelas
+   berawalan `hbgl-` supaya tidak mengubah himpunan kelas legacy yang dijaga
+   audit. */
+.hbgl-hero-divider {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: clamp(56px, 9vw, 120px);
+  pointer-events: none;
+  z-index: 2;
+  line-height: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.hbgl-hero-divider svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hbgl-hero-divider path {
+  fill: var(--hb-bg);
+}
+
+/* Pita hijau muda untuk seksi tertentu (mis. "Halaman Penting" di beranda).
+   Latar 100% lebar viewport lewat pseudo-element, jadi warnanya menembus tepi
+   kanan-kiri layar walau section-nya sendiri `container` (maks 1200px). Hanya
+   tepi bawah yang dipotong gelombang bergaya scallop — beda dari gelombang
+   tunggal di hero; tepi atas dibiarkan lurus. Padding vertikal ditambah supaya
+   isi tidak mepet dengan tepi gelombang. Semua kelas berawalan `hbgl-` agar
+   tidak mengubah himpunan kelas legacy yang dijaga audit. */
+.hb2d1n .hbgl-band {
+  position: relative;
+  isolation: isolate;
+  padding-block: 128px 168px;
+}
+
+.hbgl-band::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background: var(--hb-soft-green);
+  z-index: -2;
+}
+
+.hbgl-band__wave {
+  position: absolute;
+  left: 50%;
+  width: 100vw;
+  height: clamp(48px, 7vw, 96px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: -1;
+  line-height: 0;
+}
+
+.hbgl-band__wave svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hbgl-band__wave path {
+  fill: var(--hb-bg);
+}
+
+.hbgl-band__wave--top,
+.hbgl-band__wave--bottom {
+  bottom: -1px;
+  transform: translateX(-50%) scaleY(-1);
+}
+.hbgl-band__wave--top {
+  top: -1px;
+  bottom: auto;
+  transform: translateX(-50%);
+}
+
+/* Badge di atas pita hijau dibuat putih agar tidak menyatu dengan latar. */
+.hbgl-band .section-tag {
+  background: var(--hb-white);
+}
+
+@media (max-width: 860px) {
+  .hb2d1n .hbgl-band {
+    padding-block: 100px 140px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 560px) {
+  .hb2d1n .hbgl-band {
+    padding-block: 88px 124px;
+  }
 }

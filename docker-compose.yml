@@ -1,0 +1,30 @@
+# PostgreSQL lokal untuk pengembangan.
+#
+#   docker compose up -d      -> nyalakan database
+#   docker compose down       -> matikan (data tetap ada di volume)
+#   docker compose down -v    -> matikan dan hapus semua data
+#
+# Kredensialnya sama dengan DATABASE_URL di .env / .env.example.
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: holiday-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: holiday_banyuwangi
+      # faster initdb, hanya relevan untuk container lokal
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - holiday-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d holiday_banyuwangi"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  holiday-pg-data:
