@@ -62,7 +62,7 @@ export default function OpengraphImage() {
         </div>
 
         <div style={{ display: "flex", fontSize: 30, color: "#DDE8E1", opacity: 0.9 }}>
-          holidaybanyuwangi.vercel.app
+          www.holidaybanyuwangi.com
         </div>
       </div>
     ),

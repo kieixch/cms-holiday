@@ -10,7 +10,11 @@
 
 import type { Metadata } from "next";
 
-const FALLBACK_SITE_URL = "https://holidaybanyuwangi.vercel.app";
+// Domain produksi. Catatan: apex `holidaybanyuwangi.com` di-redirect (308)
+// ke `www`, jadi kanonik/OG/sitemap memakai www agar tidak dianggap halaman
+// duplikat. Nilai ini hanya fallback — isi `NEXT_PUBLIC_SITE_URL` di Vercel
+// dengan nilai yang sama (dan Redeploy) agar eksplisit.
+const FALLBACK_SITE_URL = "https://www.holidaybanyuwangi.com";
 
 /** Judul & deskripsi default; dipakai root layout dan halaman tanpa judul sendiri. */
 export const SITE_TITLE = "Banyuwangi Holiday - Paket Tour Banyuwangi";
