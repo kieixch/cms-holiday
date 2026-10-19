@@ -95,7 +95,7 @@ export function NewPackageButton({ categories }: Props) {
             {categories.length === 0 ? (
               <p className="admin-empty admin-empty--tight">
                 Belum ada kategori, jadi belum ada tempat untuk paket baru. Buat kategorinya dulu
-                di <Link href="/admin/kategori/baru">Kategori baru</Link>.
+                di <Link href="/adm-cms-hb/kategori/baru">Kategori baru</Link>.
               </p>
             ) : (
               <ul className="admin-modal__list">
@@ -106,7 +106,7 @@ export function NewPackageButton({ categories }: Props) {
                       className="admin-modal__row"
                       onClick={() =>
                         router.push(
-                          `/admin/paket/baru?kategori=${encodeURIComponent(category.slug)}`,
+                          `/adm-cms-hb/paket/baru?kategori=${encodeURIComponent(category.slug)}`,
                         )
                       }
                     >

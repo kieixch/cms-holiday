@@ -388,7 +388,7 @@ export type ContentFile = {
   categories: CategoryOut[];
   packages: PackageOut[];
   /**
-   * Halaman HTML mandiri (`/admin/halaman`). Opsional supaya file konten
+   * Halaman HTML mandiri (`/adm-cms-hb/halaman`). Opsional supaya file konten
    * lama — yang dibuat sebelum fitur ini — tetap valid untuk diimpor.
    */
   pages?: HtmlPageOut[];

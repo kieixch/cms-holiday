@@ -50,7 +50,7 @@ export function InactivePackageNotice({
           </p>
 
           <div className="inactive-notice__actions">
-            <Link className="btn btn-primary" href={`/admin/paket/${pkg.slug}`}>
+            <Link className="btn btn-primary" href={`/adm-cms-hb/paket/${pkg.slug}`}>
               Kembali ke panel admin
             </Link>
             <Link className="btn btn-ghost" href="/">

@@ -319,7 +319,7 @@ model Category {
   benefitsDescription String @default("")
 
   // Kepala seksi kartu tautan halaman HTML di halaman kategori
-  // (`/admin/halaman`, scope `page`). Kartunya sendiri dipilih dari editor
+   // (`/adm-cms-hb/halaman`, scope `page`). Kartunya sendiri dipilih dari editor
   // tiap halaman; field ini hanya mengatur teks kepalanya.
   pgAnchor String @default("halaman")
   pgTag    String @default("")
@@ -635,7 +635,7 @@ model GalleryImage {
 }
 
 /// Foto untuk seksi "Galeri Pengunjung" di beranda, dikelola dari editor
-/// Beranda (`/admin/kategori/beranda`). Tidak terikat paket mana pun.
+/// Beranda (`/adm-cms-hb/kategori/beranda`). Tidak terikat paket mana pun.
 model HomeGalleryImage {
   id    String @id @default(cuid())
   url   String

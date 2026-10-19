@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
 /** Halaman tujuan trigger. */
-const ADMIN_ENTRY = "/admin/login";
+const ADMIN_ENTRY = "/adm-cms-hb/login";
 
 /** Jumlah klik beruntun untuk membuka panel admin. */
 const CLICKS_REQUIRED = 3;
@@ -31,7 +31,7 @@ type TripleClickLinkProps = {
  *
  * Entry point admin sengaja disembunyikan supaya tidak bisa ditebak dari
  * markup publik. Ini adalah obfuscation, bukan security — payoff-nya ada di
- * password login `/admin/login`.
+ * password login `/adm-cms-hb/login`.
  */
 export function TripleClickLink({ href, className, children }: TripleClickLinkProps) {
   const router = useRouter();

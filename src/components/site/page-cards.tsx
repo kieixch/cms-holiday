@@ -2,7 +2,7 @@ import Image from "next/image";
 
 /**
  * Ringkas data kartu halaman HTML mandiri yang tampil di halaman publik.
- * Sumbernya `prisma.htmlPage` (panel admin → `/admin/halaman`).
+ * Sumbernya `prisma.htmlPage` (panel admin → `/adm-cms-hb/halaman`).
  */
 export type PageCardData = {
   slug: string;

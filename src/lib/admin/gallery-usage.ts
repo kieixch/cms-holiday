@@ -36,24 +36,24 @@ export async function findImageUsage(url: string) {
     // jadi tiap field dilaporkan terpisah supaya admin tahu melepas yang mana.
     ...packages.flatMap((p) => [
       ...(p.cardImage === url
-        ? [{ where: `Paket ${p.name} — kartu`, href: `/admin/paket/${p.slug}` }]
+        ? [{ where: `Paket ${p.name} — kartu`, href: `/adm-cms-hb/paket/${p.slug}` }]
         : []),
       ...(p.heroImage === url
-        ? [{ where: `Paket ${p.name} — latar hero`, href: `/admin/paket/${p.slug}` }]
+        ? [{ where: `Paket ${p.name} — latar hero`, href: `/adm-cms-hb/paket/${p.slug}` }]
         : []),
     ]),
     ...galleries.map((g) => ({
       where: `Galeri Paket ${g.package.name}`,
-      href: `/admin/paket/${g.package.slug}`,
+      href: `/adm-cms-hb/paket/${g.package.slug}`,
     })),
     // Satu kategori bisa memakai URL yang sama untuk dua field, jadi setiap
     // field dilaporkan terpisah supaya admin tahu melepasnya di mana.
     ...categories.flatMap((c) => [
       ...(c.heroImage === url
-        ? [{ where: `Kategori ${c.name} — latar hero`, href: `/admin/kategori/${c.slug}` }]
+        ? [{ where: `Kategori ${c.name} — latar hero`, href: `/adm-cms-hb/kategori/${c.slug}` }]
         : []),
       ...(c.cardImage === url
-        ? [{ where: `Kategori ${c.name} — kartu beranda`, href: `/admin/kategori/${c.slug}` }]
+        ? [{ where: `Kategori ${c.name} — kartu beranda`, href: `/adm-cms-hb/kategori/${c.slug}` }]
         : []),
     ]),
   ];

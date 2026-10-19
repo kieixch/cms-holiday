@@ -478,7 +478,7 @@ export function homeSettingsPreview(base: HomeBodyProps, values: Values): HomeBo
 /* ------------------------------------------------------------------ */
 
 /**
- * Draft halaman HTML untuk pratinjau editor `/admin/halaman`.
+ * Draft halaman HTML untuk pratinjau editor `/adm-cms-hb/halaman`.
  *
  * `cardVisible` meniru filter query route publik (`isPublished` DAN salah
  * satu penempatan dicentang): kalau false, kartu memang tidak pernah tampil
@@ -520,7 +520,7 @@ export function htmlPagePreview(base: HtmlPagePreviewBase, values: Values) {
 /* ------------------------------------------------------------------ */
 
 /**
- * Draft halaman link-bio untuk pratinjau editor `/admin/sosmed`.
+ * Draft halaman link-bio untuk pratinjau editor `/adm-cms-hb/sosmed`.
  *
  * Nilai form sudah memakai nama field yang sama dengan `BioLinkPageData`
  * (lihat `sosmedSections`), jadi `normalizeBio` cukup membacanya dengan aman —

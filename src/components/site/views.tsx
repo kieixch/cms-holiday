@@ -93,7 +93,7 @@ export type HomeSettings = {
   homeFavDesc: string;
   /** Tampilkan seksi paket favorit. */
   homeFavEnabled: boolean;
-  /** Kepala seksi kartu tautan halaman HTML (`/admin/halaman`, `scope: page`). */
+  /** Kepala seksi kartu tautan halaman HTML (`/adm-cms-hb/halaman`, `scope: page`). */
   homePgTag: string;
   homePgTitle: string;
   homePgAccent: string;
@@ -172,7 +172,7 @@ export type HomeBodyProps = {
   igHasMore: boolean;
   /**
    * Kartu halaman HTML mandiri yang dipilih admin tampil di beranda
-   * (`/admin/halaman`). Opsional; kosong = seksi kartu tidak dirender.
+   * (`/adm-cms-hb/halaman`). Opsional; kosong = seksi kartu tidak dirender.
    */
   pages?: PageCardData[];
   /**
@@ -249,7 +249,7 @@ export function HomeBody({
       {/*
         Kartu halaman HTML mandiri: tepat di bawah seksi types. Kepala
         seksi-nya (`homePg*`) disunting di editor Beranda; kartunya sendiri
-        dari `/admin/halaman`. Section dibungkus `wrap` supaya kliknya di live
+        dari `/adm-cms-hb/halaman`. Section dibungkus `wrap` supaya kliknya di live
         preview melompat ke field `homePg*`.
       */}
       {pages.length > 0 && settings.homePgEnabled
@@ -489,7 +489,7 @@ export type CategoryBodyProps = {
   ctaBackground?: string | null;
   /**
    * Kartu halaman HTML mandiri yang dipilih admin tampil di semua halaman
-   * kategori (`/admin/halaman`). Opsional; kosong = seksi tidak dirender.
+   * kategori (`/adm-cms-hb/halaman`). Opsional; kosong = seksi tidak dirender.
    */
   pages?: PageCardData[];
   wrap?: SectionWrap;
@@ -596,7 +596,7 @@ export function CategoryBody({
 
       {/* Kartu halaman HTML mandiri: tepat di bawah listing paket. Kepala
           seksi-nya (`pg*`) disunting per kategori; kartunya dari
-          `/admin/halaman`. */}
+          `/adm-cms-hb/halaman`. */}
       {pages.length > 0
         ? wrap(
             "pages",

@@ -49,7 +49,7 @@ export type PreviewBase<TBody> = {
   /**
    * Kartu halaman HTML yang tampil di halaman ini (konteks preview).
    *
-   * Pratinjau beranda/kategori ikut menampilkan kartu `/admin/halaman` yang
+   * Pratinjau beranda/kategori ikut menampilkan kartu `/adm-cms-hb/halaman` yang
    * sudah tayang supaya admin bisa menilai urutan dan kepadatan seksi kartu
    * tanpa membuka halaman publik. Sumbernya query yang sama dengan route
    * publik, jadi preview tidak menampilkan kartu yang di situs asli absen.
@@ -119,7 +119,7 @@ export async function categoryOptions(): Promise<Option[]> {
 }
 
 /**
- * Data awal live preview editor `/admin/halaman`.
+ * Data awal live preview editor `/adm-cms-hb/halaman`.
  *
  * Hanya bagian yang punya padanan visual di pratinjau: dokumen yang ditempel
  * dan kartu tautannya. `slug`/`order` ikut disimpan supaya pratinjau alamat
@@ -168,7 +168,7 @@ export async function halamanPreviewBase(
 }
 
 /**
- * Data awal live preview editor `/admin/sosmed`.
+ * Data awal live preview editor `/adm-cms-hb/sosmed`.
  *
  * Halaman link-bio dirender di luar layout situs (`<BioLinkPage>` mandiri),
  * jadi preview tidak butuh `PublicShell` — cukup isi `BioLinkPageData`.

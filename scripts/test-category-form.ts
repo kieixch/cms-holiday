@@ -169,31 +169,31 @@ async function main() {
 
   console.log("1. Gerbang akses");
   {
-    const anon = await fetch(`${BASE}/admin/kategori`, { redirect: "manual" });
+    const anon = await fetch(`${BASE}/adm-cms-hb/kategori`, { redirect: "manual" });
     check("anonim dialihkan", anon.status === 307 || anon.status === 302, `status ${anon.status}`);
     check(
       "ke halaman login",
-      anon.headers.get("location")?.includes("/admin/login") === true,
+      anon.headers.get("location")?.includes("/adm-cms-hb/login") === true,
       anon.headers.get("location") ?? "(tanpa location)",
     );
 
-    const ok = await fetch(`${BASE}/admin/kategori`, { headers: auth, redirect: "manual" });
+    const ok = await fetch(`${BASE}/adm-cms-hb/kategori`, { headers: auth, redirect: "manual" });
     check("admin boleh", ok.status === 200, `status ${ok.status}`);
   }
 
   console.log("\n2. Halaman daftar merender data");
   {
-    const html = await (await fetch(`${BASE}/admin/kategori`, { headers: auth })).text();
+    const html = await (await fetch(`${BASE}/adm-cms-hb/kategori`, { headers: auth })).text();
     for (const category of categories) {
       check(`"${category.name}" muncul`, html.includes(category.name));
     }
-    check("tautan buat Kategori baru ada", html.includes("/admin/kategori/baru"));
+    check("tautan buat Kategori baru ada", html.includes("/adm-cms-hb/kategori/baru"));
   }
 
   console.log("\n3. Form edit merender semua field");
   {
     const html = await (
-      await fetch(`${BASE}/admin/kategori/${sample.slug}`, { headers: auth })
+      await fetch(`${BASE}/adm-cms-hb/kategori/${sample.slug}`, { headers: auth })
     ).text();
 
     const missing = inputNames(categoryFields).filter((name) => !html.includes(name));
@@ -244,7 +244,7 @@ async function main() {
 
   console.log("\n4. Halaman 'Kategori baru'");
   {
-    const res = await fetch(`${BASE}/admin/kategori/baru`, { headers: auth, redirect: "manual" });
+    const res = await fetch(`${BASE}/adm-cms-hb/kategori/baru`, { headers: auth, redirect: "manual" });
     check("halaman ada", res.status === 200, `status ${res.status}`);
     const html = await res.text();
     check("tidak mengirim id (mode buat)", !html.includes(`name="id" value=`));
@@ -383,7 +383,7 @@ async function main() {
 
     for (const category of categories) {
       const html = await (
-        await fetch(`${BASE}/admin/kategori/${category.slug}`, { headers: auth })
+        await fetch(`${BASE}/adm-cms-hb/kategori/${category.slug}`, { headers: auth })
       ).text();
       const ada = html.includes('class="type-card"') && html.includes('data-section="card"');
       if (!ada) tanpaKartu.push(`${category.slug} (${category.kind})`);

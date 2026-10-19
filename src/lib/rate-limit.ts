@@ -3,7 +3,7 @@ import "server-only";
 /**
  * Pembatas laju percobaan login (in-memory).
  *
- * Menahan brute force pada `/admin/login`. Dihitung per kunci (mis. IP dan
+ * Menahan brute force pada `/adm-cms-hb/login`. Dihitung per kunci (mis. IP dan
  * IP+email) dengan jendela tetap: setelah `MAX_FAILURES` kegagalan dalam
  * `WINDOW_MS`, kunci diblokir `BLOCK_MS`.
  *

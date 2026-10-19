@@ -25,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 /**
- * Halaman link-bio (Instagram/TikTok) dari panel admin (`/admin/sosmed`).
+ * Halaman link-bio (Instagram/TikTok) dari panel admin (`/adm-cms-hb/sosmed`).
  *
  * Dulu route handler yang mengirim kolom `html` apa adanya. Sekarang halaman
  * native React: konten dibaca dari kolom terstruktur `HtmlPage.bio` dan

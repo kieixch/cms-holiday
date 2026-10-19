@@ -36,7 +36,7 @@ type Props = {
  * Kontrol pemilih gambar.
  *
  * Hanya menampilkan aset yang sudah ada di galeri — bukan tempat mengunggah.
- * Konsepnya: unggah sekali di `/admin/gallery`, lalu pakai di mana saja.
+ * Konsepnya: unggah sekali di `/adm-cms-hb/gallery`, lalu pakai di mana saja.
  *
  * Daftar tidak dikirim dari server lewat props. Kalau seluruh galeri ikut
  * seluruh galeri ikut di tiap form kategori/paket, admin dengan ribuan foto
@@ -246,7 +246,7 @@ export function ImagePicker({
               <p className="admin-empty admin-empty--tight">
                 {term
                   ? `Tidak ada gambar yang cocok dengan "${term}".`
-                  : "Galeri masih kosong. Unggah foto dulu di /admin/gallery."}
+                  : "Galeri masih kosong. Unggah foto dulu di /adm-cms-hb/gallery."}
               </p>
             ) : null}
 

@@ -14,10 +14,10 @@ import { SESSION_COOKIE } from "./lib/session-constants";
  * halaman, server action, dan route handler.
  *
  * Peran di sini murni defense-in-depth: menutup celah "route baru di bawah
- * `/admin` yang lupa dipasangi guard" dan memastikan POST server action tanpa
+ * `/adm-cms-hb` yang lupa dipasangi guard" dan memastikan POST server action tanpa
  * sesi langsung ditolak sebelum masuk router.
  *
- * `/admin/login` harus lolos tanpa cookie, kalau tidak terjadi redirect loop.
+ * `/adm-cms-hb/login` harus lolos tanpa cookie, kalau tidak terjadi redirect loop.
  */
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
@@ -32,7 +32,7 @@ export function proxy(request: NextRequest): NextResponse {
 
   // Halaman login memang untuk pengunjung tanpa sesi (dan di situ sendiri
   // ada `redirectIfSignedIn` untuk yang sudah masuk).
-  if (pathname === "/admin/login") return noindex(NextResponse.next());
+  if (pathname === "/adm-cms-hb/login") return noindex(NextResponse.next());
 
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
 
@@ -44,9 +44,9 @@ export function proxy(request: NextRequest): NextResponse {
   }
 
   if (hasSession) return noindex(NextResponse.next());
-  return noindex(NextResponse.redirect(new URL("/admin/login", request.url)));
+  return noindex(NextResponse.redirect(new URL("/adm-cms-hb/login", request.url)));
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/adm-cms-hb/:path*", "/api/admin/:path*"],
 };

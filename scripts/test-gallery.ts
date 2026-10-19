@@ -3,9 +3,9 @@
  *
  * Menjalankan server Next sendiri di port 3123 dengan STORAGE_DRIVER=local,
  * lalu mengujinya:
- *   1. anonim ditolak 401, halaman /admin/gallery dialihkan ke login
+ *   1. anonim ditolak 401, halaman /adm-cms-hb/gallery dialihkan ke login
  *   2. sesi admin di-mint langsung (server action dari luar proses rapuh)
- *   2b. /admin/media lama Dialihkan ke /admin/gallery
+ *   2b. /adm-cms-hb/media lama Dialihkan ke /adm-cms-hb/gallery
  *   3. foto 3200x2400 diunggah -> diperkecil, jadi WebP, tersimpan
  *   4. file ada di disk DAN bisa diambil lewat URL publik
  *   5. dimensi, mime, folder, dan ukuran benar di database
@@ -72,7 +72,7 @@ async function startServer(): Promise<ChildProcess> {
   for (let i = 0; i < 60; i++) {
     await new Promise((r) => setTimeout(r, 500));
     try {
-      const res = await fetch(`${BASE}/admin/login`, { signal: AbortSignal.timeout(2000) });
+      const res = await fetch(`${BASE}/adm-cms-hb/login`, { signal: AbortSignal.timeout(2000) });
       if (res.ok) return child;
     } catch {
       /* belum siap */
@@ -110,24 +110,24 @@ async function main() {
 
   console.log("\n2. Halaman galeri butuh sesi");
   {
-    const anon = await fetch(`${BASE}/admin/gallery`, { redirect: "manual" });
+    const anon = await fetch(`${BASE}/adm-cms-hb/gallery`, { redirect: "manual" });
     check("anonim dialihkan ke login", anon.status === 307 || anon.status === 302, `status ${anon.status}`);
-    check("ke /admin/login", (anon.headers.get("location") ?? "").includes("/admin/login"), anon.headers.get("location") ?? "-");
+    check("ke /adm-cms-hb/login", (anon.headers.get("location") ?? "").includes("/adm-cms-hb/login"), anon.headers.get("location") ?? "-");
 
-    const authed = await fetch(`${BASE}/admin/gallery`, { headers: auth });
+    const authed = await fetch(`${BASE}/adm-cms-hb/gallery`, { headers: auth });
     check("dengan sesi 200", authed.status === 200, `status ${authed.status}`);
   }
 
-  console.log("\n2b. Alias lama /admin/media");
+  console.log("\n2b. Alias lama /adm-cms-hb/media");
   {
-    const res = await fetch(`${BASE}/admin/media`, { headers: auth, redirect: "manual" });
+    const res = await fetch(`${BASE}/adm-cms-hb/media`, { headers: auth, redirect: "manual" });
     check("status redirect", res.status === 307 || res.status === 302, `status ${res.status}`);
-    check("mengarah ke /admin/gallery", (res.headers.get("location") ?? "").includes("/admin/gallery"), res.headers.get("location") ?? "-");
+    check("mengarah ke /adm-cms-hb/gallery", (res.headers.get("location") ?? "").includes("/adm-cms-hb/gallery"), res.headers.get("location") ?? "-");
 
     // Alias harus tetap terjaga sesi: halaman admin yang dialihkan tanpa cek
     // login bisa dipakai menebak halaman mana yang ada.
-    const anon = await fetch(`${BASE}/admin/media`, { redirect: "manual" });
-    check("tanpa sesi tetap ke login", (anon.headers.get("location") ?? "").includes("/admin/login"), anon.headers.get("location") ?? "-");
+    const anon = await fetch(`${BASE}/adm-cms-hb/media`, { redirect: "manual" });
+    check("tanpa sesi tetap ke login", (anon.headers.get("location") ?? "").includes("/adm-cms-hb/login"), anon.headers.get("location") ?? "-");
   }
 
   const before = await prisma.mediaAsset.count();
@@ -326,14 +326,14 @@ async function main() {
 
   console.log("\n7d. Halaman detail aset");
   {
-    const anon = await fetch(`${BASE}/admin/gallery/${assetId}`, { redirect: "manual" });
+    const anon = await fetch(`${BASE}/adm-cms-hb/gallery/${assetId}`, { redirect: "manual" });
     check(
       "butuh sesi",
       anon.status === 307 || anon.status === 302,
       `status ${anon.status}`,
     );
 
-    const res = await fetch(`${BASE}/admin/gallery/${assetId}`, { headers: auth });
+    const res = await fetch(`${BASE}/adm-cms-hb/gallery/${assetId}`, { headers: auth });
     const html = await res.text();
     check("halaman ada", res.status === 200, `status ${res.status}`);
     check("judul memakai nama file", html.includes("Foto Liburan Grande"), "");
@@ -343,7 +343,7 @@ async function main() {
     check("editor crop dirender untuk file milik storage", html.includes("admin-crop__box"), "");
     check("penanda hasil suntingan tersedia", html.includes("admin-crop__angle"), "");
 
-    const missing = await fetch(`${BASE}/admin/gallery/tidak-ada`, {
+    const missing = await fetch(`${BASE}/adm-cms-hb/gallery/tidak-ada`, {
       headers: auth,
       redirect: "manual",
     });
@@ -367,7 +367,7 @@ async function main() {
 
     try {
       const legacyHtml = await (
-        await fetch(`${BASE}/admin/gallery/${legacy.id}`, { headers: auth })
+        await fetch(`${BASE}/adm-cms-hb/gallery/${legacy.id}`, { headers: auth })
       ).text();
       check("aset impor: alasannya dijelaskan", /berasal dari impor lama/.test(legacyHtml), "");
       check("aset impor: editor crop tidak dirender", !legacyHtml.includes("admin-crop__box"), "");
@@ -495,7 +495,7 @@ async function main() {
 
     console.log("\n11. Aset asal tidak bisa dihapus selama masih punya turunan");
     {
-      const res = await fetch(`${BASE}/admin/gallery`, { headers: auth });
+      const res = await fetch(`${BASE}/adm-cms-hb/gallery`, { headers: auth });
       const html = await res.text();
       check("penanda hasil suntingan muncul di daftar", /Hasil suntingan/.test(html), "");
 
@@ -577,7 +577,7 @@ function hiddenInputsOf(formHtml: string): HiddenInput[] {
  * tidak salah menunjuk aksi.
  */
 async function readDeleteHidden(): Promise<HiddenInput[]> {
-  const html = await (await fetch(`${BASE}/admin/gallery`, { headers: auth })).text();
+  const html = await (await fetch(`${BASE}/adm-cms-hb/gallery`, { headers: auth })).text();
 
   const forms = html.match(/<form[\s\S]*?<\/form>/g) ?? [];
   const target = forms.find((f) => /name="id"/.test(f));
@@ -597,7 +597,7 @@ async function deleteViaServerAction(assetId: string): Promise<string> {
   for (const h of hidden) fields[h.name] = h.value;
 
   const boundary = `----opencodeGallery${Date.now().toString(16)}`;
-  const res = await fetch(`${BASE}/admin/gallery`, {
+  const res = await fetch(`${BASE}/adm-cms-hb/gallery`, {
     method: "POST",
     headers: { ...auth, "Content-Type": `multipart/form-data; boundary=${boundary}` },
     body: multipart(fields, boundary),

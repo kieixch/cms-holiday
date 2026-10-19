@@ -2,7 +2,7 @@ import type { Field, Option } from "./fields";
 import { flattenSections, type FieldSection } from "./sections";
 
 /**
- * Spec form halaman HTML mandiri (`/admin/halaman`).
+ * Spec form halaman HTML mandiri (`/adm-cms-hb/halaman`).
  *
  * Editor memakai `<LiveEditor>`: pratinjau di kolom kanan menampilkan dua
  * bagian yang bisa diklik untuk melompat ke field-nya — dokumen (iframe

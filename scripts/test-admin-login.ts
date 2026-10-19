@@ -8,7 +8,7 @@
  *
  *   1. password salah  -> ditolak, tidak ada cookie sesi
  *   2. email tak dikenal -> ditolak
- *   3. kredensial benar -> cookie `hb_admin_session` terbit + redirect /admin
+ *   3. kredensial benar -> cookie `hb_admin_session` terbit + redirect /adm-cms-hb
  *   4. cookie itu       -> panel terbuka, anonim tetap ditolak
  *
  * Cara ini sengaja memakai POST form biasa, bukan header `Next-Action`.
@@ -56,7 +56,7 @@ type ActionRef = { id: string; key: string };
 
 /** Ambil ID + key server action dari HTML halaman login. */
 async function readActionRef(): Promise<ActionRef> {
-  const html = await (await fetch(`${BASE}/admin/login`)).text();
+  const html = await (await fetch(`${BASE}/adm-cms-hb/login`)).text();
   const id = html.match(/id&quot;:&quot;([a-f0-9]+)&quot;/)?.[1];
   const key = html.match(/name="\$ACTION_KEY" value="([^"]+)"/)?.[1];
   if (!id || !key) throw new Error("tidak menemukan ID/key server action di halaman login");
@@ -80,7 +80,7 @@ async function submitLogin(
   const boundary = `----opencodeLogin${Date.now().toString(16)}`;
   const body = multipart(fields, boundary);
 
-  return fetch(`${BASE}/admin/login`, {
+  return fetch(`${BASE}/adm-cms-hb/login`, {
     method: "POST",
     headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
     body,
@@ -99,7 +99,7 @@ function sessionCookie(res: Response): string | null {
 async function main() {
   console.log(`Menguji login di ${BASE}\n`);
 
-  const health = await fetch(`${BASE}/admin/login`, { redirect: "manual" });
+  const health = await fetch(`${BASE}/adm-cms-hb/login`, { redirect: "manual" });
   check("halaman login terjangkau", health.status === 200, `status ${health.status}`);
   if (health.status !== 200) {
     console.log("\nServer tidak jalan. Jalankan `pnpm dev` lebih dulu.");
@@ -122,7 +122,7 @@ async function main() {
   {
     const res = await submitLogin(ref, email, "password-yang-salah");
     check("tidak ada cookie sesi", sessionCookie(res) === null);
-    check("tidak dialihkan ke /admin", (res.headers.get("location") ?? "") !== "/admin");
+    check("tidak dialihkan ke /adm-cms-hb", (res.headers.get("location") ?? "") !== "/adm-cms-hb");
   }
 
   console.log("\n2. Email tidak dikenal ditolak");
@@ -137,8 +137,8 @@ async function main() {
     const cookie = sessionCookie(res);
     check("cookie sesi terbit", cookie !== null, cookie ? `${cookie.slice(0, 20)}…` : "tidak ada");
     check(
-      "dialihkan ke /admin",
-      res.headers.get("location") === "/admin",
+      "dialihkan ke /adm-cms-hb",
+      res.headers.get("location") === "/adm-cms-hb",
       res.headers.get("location") ?? "(tanpa location)",
     );
     return cookie;
@@ -153,12 +153,12 @@ async function main() {
   {
     const auth = { cookie: `hb_admin_session=${token}` };
 
-    for (const path of ["/admin", "/admin/kategori", "/admin/kategori/baru", "/admin/gallery"]) {
+    for (const path of ["/adm-cms-hb", "/adm-cms-hb/kategori", "/adm-cms-hb/kategori/baru", "/adm-cms-hb/gallery"]) {
       const res = await fetch(`${BASE}${path}`, { headers: auth, redirect: "manual" });
       check(`${path} terbuka`, res.status === 200, `status ${res.status}`);
     }
 
-    const anon = await fetch(`${BASE}/admin`, { redirect: "manual" });
+    const anon = await fetch(`${BASE}/adm-cms-hb`, { redirect: "manual" });
     check(
       "tanpa sesi tetap dialihkan",
       anon.status === 307 || anon.status === 302,

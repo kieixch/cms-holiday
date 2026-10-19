@@ -4,7 +4,7 @@ import type { Field } from "./fields";
 import { flattenSections, type FieldSection } from "./sections";
 
 /**
- * Spec form halaman link-bio (`/admin/sosmed`).
+ * Spec form halaman link-bio (`/adm-cms-hb/sosmed`).
  *
  * Sebelumnya editor ini hanya satu textarea HTML: dokumen link-bio utuh
  * ditempel, lalu `/bio/<slug>` mengirimkannya apa adanya. Sekarang halaman

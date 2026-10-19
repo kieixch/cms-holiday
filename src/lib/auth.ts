@@ -96,7 +96,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
  */
 export async function requireSessionUser(): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/adm-cms-hb/login");
   return user;
 }
 
@@ -109,7 +109,7 @@ export async function requireSessionUser(): Promise<SessionUser> {
  */
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) redirect("/admin/login");
+  if (!user) redirect("/adm-cms-hb/login");
   if (user.role !== "admin") redirect("/");
   return user;
 }

@@ -10,7 +10,7 @@
  *      .hb2d1n sama seperti situs lama, jadi tidak menabrak preflight.
  *
  * Gaya panel admin TIDAK ikut di sini: admin.css diimpor hanya oleh
- * `src/app/admin/layout.tsx`, supaya halaman publik tidak mengunduh ~47 KB
+ * `src/app/adm-cms-hb/layout.tsx`, supaya halaman publik tidak mengunduh ~47 KB
  * CSS yang tidak dipakai.
  * --------------------------------------------------------------------------- */
 @import "../styles/legacy.css";

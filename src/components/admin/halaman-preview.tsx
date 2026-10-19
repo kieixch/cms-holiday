@@ -8,7 +8,7 @@ import type { ShellData } from "@/components/site/views";
 import { injectBackHomeButton } from "@/lib/halaman-back-button";
 
 /**
- * Pratinjau dokumen HTML untuk editor `/admin/halaman`.
+ * Pratinjau dokumen HTML untuk editor `/adm-cms-hb/halaman`.
  *
  * Isi textarea dirender lewat iframe `data:text/html` (bukan `srcdoc`),
  * karena `about:srcdoc` mewarisi CSP halaman admin yang ketat — stylesheet,

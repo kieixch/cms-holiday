@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         // Panel admin & API tidak boleh di-crawl; API juga tidak punya
         // konten yang berguna dan dapat membanjiri log.
-        disallow: ["/admin/", "/api/"],
+        disallow: ["/adm-cms-hb/", "/api/"],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

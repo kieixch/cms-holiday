@@ -58,7 +58,7 @@ const csp = cspDirectives.join("; ");
  * CSP panel admin: sama ketatnya dengan situs publik, ditambah `frame-src`
  * yang mengizinkan `data:`.
  *
- * Satu-satunya alasan: editor `/admin/halaman` me-render draf dokumen di
+ * Satu-satunya alasan: editor `/adm-cms-hb/halaman` me-render draf dokumen di
  * iframe `data:text/html` (lihat `HalamanDocPreview`). Dokumen `data:`
  * berdiri sendiri tanpa CSP — kalau memakai `srcdoc`, dokumennya mewarisi
  * CSP admin dan stylesheet/font eksternal yang ditempel admin ikut
@@ -119,12 +119,12 @@ const nextConfig: NextConfig = {
     // Entry spesifik diletakkan setelah entry umum: ketika beberapa entry
     // cocok untuk satu path, nilai header dari entry BELAKANGAN yang menang —
     // sudah diverifikasi empiris lewat `curl -I /halaman/<slug>` (CSP longgar
-    // menang tanpa duplikat) dan `curl -I /admin/halaman/baru`.
+    // menang tanpa duplikat) dan `curl -I /adm-cms-hb/halaman/baru`.
     return [
       { source: "/(.*)", headers: securityHeaders },
       { source: "/halaman/:path*", headers: halamanHeaders },
       { source: "/bio/:path*", headers: halamanHeaders },
-      { source: "/admin/:path*", headers: adminHeaders },
+      { source: "/adm-cms-hb/:path*", headers: adminHeaders },
     ];
   },
   images: {

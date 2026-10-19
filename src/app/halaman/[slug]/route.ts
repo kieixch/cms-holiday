@@ -4,7 +4,7 @@ import { injectBackHomeButton } from "@/lib/halaman-back-button";
 import { prisma } from "@/lib/db";
 
 /**
- * Dokumen HTML mandiri dari panel admin (`/admin/halaman`).
+ * Dokumen HTML mandiri dari panel admin (`/adm-cms-hb/halaman`).
  *
  * Route handler, bukan `page.tsx`: isi kolom `html` dikirim apa adanya lewat
  * response body — tanpa layout, tanpa metadata React, tanpa komponen apa pun

@@ -143,21 +143,21 @@ async function main() {
 
   console.log("1. Gerbang akses");
   {
-    const anon = await fetch(`${BASE}/admin/paket`, { redirect: "manual" });
+    const anon = await fetch(`${BASE}/adm-cms-hb/paket`, { redirect: "manual" });
     check("anonim dialihkan", anon.status === 307 || anon.status === 302, `status ${anon.status}`);
     check(
       "ke halaman login",
-      anon.headers.get("location")?.includes("/admin/login") === true,
+      anon.headers.get("location")?.includes("/adm-cms-hb/login") === true,
       anon.headers.get("location") ?? "(tanpa location)",
     );
-    const ok = await fetch(`${BASE}/admin/paket`, { headers: auth, redirect: "manual" });
+    const ok = await fetch(`${BASE}/adm-cms-hb/paket`, { headers: auth, redirect: "manual" });
     check("admin boleh", ok.status === 200, `status ${ok.status}`);
   }
 
   console.log("\n2. Semua paket masuk daftar");
   {
-    const html = await (await fetch(`${BASE}/admin/paket`, { headers: auth })).text();
-    const linked = new Set([...html.matchAll(/href="\/admin\/paket\/([^"]+)"/g)].map((m) => m[1]!));
+    const html = await (await fetch(`${BASE}/adm-cms-hb/paket`, { headers: auth })).text();
+    const linked = new Set([...html.matchAll(/href="\/adm-cms-hb\/paket\/([^"]+)"/g)].map((m) => m[1]!));
     eq("jumlah tautan = jumlah paket", linked.size, packages.length);
 
     const missing = packages.filter((p) => !linked.has(p.slug)).map((p) => p.slug);
@@ -172,14 +172,14 @@ async function main() {
 
     check(
       "pencarian tidak error",
-      (await fetch(`${BASE}/admin/paket?q=open`, { headers: auth })).status === 200,
+      (await fetch(`${BASE}/adm-cms-hb/paket?q=open`, { headers: auth })).status === 200,
     );
     check("paket dikelompokkan per kategori", (html.match(/class="admin-group"/g) ?? []).length > 0);
   }
 
   console.log(`\n3. Detail paket: ${sample.slug}`);
   {
-    const res = await fetch(`${BASE}/admin/paket/${sample.slug}`, { headers: auth, redirect: "manual" });
+    const res = await fetch(`${BASE}/adm-cms-hb/paket/${sample.slug}`, { headers: auth, redirect: "manual" });
     check("halaman ada", res.status === 200, `status ${res.status}`);
     const html = await res.text();
 
@@ -207,7 +207,7 @@ async function main() {
 
   console.log("\n4. Accordion tidak menyembunyikan field");
   {
-    const html = await (await fetch(`${BASE}/admin/paket/${sample.slug}`, { headers: auth })).text();
+    const html = await (await fetch(`${BASE}/adm-cms-hb/paket/${sample.slug}`, { headers: auth })).text();
     // Section yang tertutup tetap harus ada di DOM; kalau tidak, nilainya tidak
     // ikut FormData dan menutup section berarti menghapus isinya saat disimpan.
     const panels = [...html.matchAll(/data-section-panel="([^"]+)"/g)].map((m) => m[1]!);
@@ -227,7 +227,7 @@ async function main() {
 
   console.log("\n5. Matriks harga terpasang ke kolom yang benar");
   {
-    const html = await (await fetch(`${BASE}/admin/paket/${sample.slug}`, { headers: auth })).text();
+    const html = await (await fetch(`${BASE}/adm-cms-hb/paket/${sample.slug}`, { headers: auth })).text();
     const htmlCounts = counts(html);
     const pricing = sample.pricing;
 
@@ -358,7 +358,7 @@ async function main() {
 
   console.log("\n8. Halaman beranda");
   {
-    const res = await fetch(`${BASE}/admin/kategori/beranda`, { headers: auth, redirect: "manual" });
+    const res = await fetch(`${BASE}/adm-cms-hb/kategori/beranda`, { headers: auth, redirect: "manual" });
     check("halaman beranda ada", res.status === 200, `status ${res.status}`);
     const html = await res.text();
 
@@ -397,9 +397,9 @@ async function main() {
 
   console.log("\n9. Kategori memuat entri Beranda");
   {
-    const html = await (await fetch(`${BASE}/admin/kategori`, { headers: auth })).text();
-    check("tautan ke /admin/kategori/beranda", html.includes('href="/admin/kategori/beranda"'));
-    check("tautan ke /admin/paket tersedia di sidebar", html.includes('href="/admin/paket"'));
+    const html = await (await fetch(`${BASE}/adm-cms-hb/kategori`, { headers: auth })).text();
+    check("tautan ke /adm-cms-hb/kategori/beranda", html.includes('href="/adm-cms-hb/kategori/beranda"'));
+    check("tautan ke /adm-cms-hb/paket tersedia di sidebar", html.includes('href="/adm-cms-hb/paket"'));
   }
 
   console.log("\n10. Alur paket baru");
@@ -407,25 +407,25 @@ async function main() {
     // Kategori di popup dikirim dari server, jadi daftar paket harus memuat
     // tombolnya. Isi popup sendiri baru muncul setelah klik (state client),
     // jadi yang bisa diperiksa dari HTML adalah kehadiran tombolnya.
-    const listing = await (await fetch(`${BASE}/admin/paket`, { headers: auth })).text();
+    const listing = await (await fetch(`${BASE}/adm-cms-hb/paket`, { headers: auth })).text();
     check('tombol "Paket Baru" ada di daftar', listing.includes("Paket Baru"));
     check("tombol menandai dialog", listing.includes('aria-haspopup="dialog"'));
 
     // Tanpa kategori yang jelas, halaman baru tidak bisa menentukan `kind` dan
     // `hasDetailPage`, jadi harus mengembalikan user ke daftar.
-    const noCategory = await fetch(`${BASE}/admin/paket/baru`, { headers: auth, redirect: "manual" });
+    const noCategory = await fetch(`${BASE}/adm-cms-hb/paket/baru`, { headers: auth, redirect: "manual" });
     check(
       "tanpa kategori diarahkan ke daftar",
       [302, 303, 307].includes(noCategory.status),
       `status ${noCategory.status}`,
     );
     check(
-      "arahkan ke /admin/paket",
-      noCategory.headers.get("location")?.includes("/admin/paket") === true,
+      "arahkan ke /adm-cms-hb/paket",
+      noCategory.headers.get("location")?.includes("/adm-cms-hb/paket") === true,
       noCategory.headers.get("location") ?? "(tanpa location)",
     );
 
-    const bogus = await fetch(`${BASE}/admin/paket/baru?kategori=tidak-ada`, {
+    const bogus = await fetch(`${BASE}/adm-cms-hb/paket/baru?kategori=tidak-ada`, {
       headers: auth,
       redirect: "manual",
     });
@@ -435,7 +435,7 @@ async function main() {
       `status ${bogus.status}`,
     );
 
-    const res = await fetch(`${BASE}/admin/paket/baru?kategori=${sample.category.slug}`, {
+    const res = await fetch(`${BASE}/adm-cms-hb/paket/baru?kategori=${sample.category.slug}`, {
       headers: auth,
       redirect: "manual",
     });
@@ -479,7 +479,7 @@ async function main() {
     if (openTrip) {
       // Paket yang halamannya sudah aktif harus tampil seperti paket private:
       // kartu membuka detail, tombol WhatsApp ada di hero.
-      const editor = await (await fetch(`${BASE}/admin/paket/${openTrip.slug}`, { headers: auth })).text();
+      const editor = await (await fetch(`${BASE}/adm-cms-hb/paket/${openTrip.slug}`, { headers: auth })).text();
       check(
         "editor memuat tombol detail di preview",
         editor.includes(DETAIL_CARD_BUTTON),
@@ -495,7 +495,7 @@ async function main() {
     if (openTripTanpaDetail) {
       // Arah sebaliknya: tanpa halaman detail tidak boleh ada tombol detail,
       // karena tautannya akan mengarah ke URL yang tidak ada.
-      const editor = await (await fetch(`${BASE}/admin/paket/${openTripTanpaDetail.slug}`, { headers: auth })).text();
+      const editor = await (await fetch(`${BASE}/adm-cms-hb/paket/${openTripTanpaDetail.slug}`, { headers: auth })).text();
       check(
         "Open Trip tanpa detail tidak menampilkan tombol detail",
         !editor.includes(DETAIL_CARD_BUTTON),

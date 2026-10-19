@@ -2,7 +2,7 @@
  * Isi kolom `HtmlPage.bio` untuk dua halaman link-bio (`/bio/<slug>`) dari
  * dokumen HTML aslinya.
  *
- * Editor `/admin/sosmed` sekarang menyunting data terstruktur, bukan dokumen
+ * Editor `/adm-cms-hb/sosmed` sekarang menyunting data terstruktur, bukan dokumen
  * HTML utuh. Skrip ini membaca sumber konten apa adanya:
  *   - `data html/menu/instagram link bio/instagramlink.html`
  *   - `data html/menu/tiktok link bio/tiktoklink.html`
