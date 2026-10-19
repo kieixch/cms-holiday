@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { publicUrlFor } from "@/lib/storage";
+
 /**
  * Menyajikan media untuk driver `local`.
  *
@@ -37,14 +39,22 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ key?: string[] }> },
 ) {
-  // Driver lain menyajikan URL absolut sendiri (R2), jadi route ini tidak aktif.
-  if ((process.env.STORAGE_DRIVER ?? "local") !== "local") {
-    return new Response("Not found", { status: 404 });
-  }
-
   const { key } = await params;
   const parts = (key ?? []).filter(Boolean);
   if (parts.length === 0) return new Response("Not found", { status: 404 });
+
+  // Driver S3/R2 menyajikan isi objek sendiri lewat domain bucket publik.
+  // URL `/uploads/...` lama di database (hasil seed atau unggahan sebelum
+  // pindah storage) tetap harus hidup — arahkan ke URL publik R2. Tanpa ini
+  // semua media lawas 404 di Vercel karena route ini tidak menyajikan file.
+  if ((process.env.STORAGE_DRIVER ?? "local") !== "local") {
+    try {
+      const target = publicUrlFor(parts.map(encodeURIComponent).join("/"));
+      return Response.redirect(target, 302);
+    } catch {
+      return new Response("Not found", { status: 404 });
+    }
+  }
 
   const extension = path.extname(parts[parts.length - 1]).toLowerCase();
   const contentType = CONTENT_TYPES[extension];
