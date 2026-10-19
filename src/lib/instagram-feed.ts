@@ -69,23 +69,22 @@ function readCredentials(): Credentials | null {
   return { userId, token };
 }
 
-/** Penanda supaya `next build` tidak menarik API atau menulis database. */
-function isBuildPhase(): boolean {
-  return process.env.NEXT_PHASE === "phase-production-build";
-}
-
 let lastAttemptAt = 0;
 let failures = 0;
 
 /**
  * Tarik postingan terbaru kalau cache sudah kedaluwarsa.
  *
+ * Sengaja juga dipanggil saat `next build`: beranda di-SSG dari tabel
+ * `InstagramPost`, jadi kalau sinkronisasi menunggu runtime, halaman bisa
+ * ter-cache selama satu siklus revalidate dengan grid kosong. Kegagalan
+ * (Graph API/DB tidak terjangkau dari mesin build) ditangkap di sini sehingga
+ * build tetap lanjut dengan isi tabel apa adanya.
+ *
  * Aman dipanggil berulang: percobaan dicatat lebih dulu (dan digandakan saat
  * gagal) supaya beberapa request paralel tidak ikut menarik API bersamaan.
  */
 export async function ensureFresh(): Promise<void> {
-  if (isBuildPhase()) return;
-
   const now = Date.now();
   const backoff = TTL_MS * Math.min(2 ** failures, 8);
   if (now - lastAttemptAt < backoff) return;
@@ -130,7 +129,11 @@ async function pull(): Promise<boolean> {
     access_token: credentials.token,
   });
   const res = await fetch(`${GRAPH_API}/${credentials.userId}/media?${params}`, {
-    cache: "no-store",
+    // `revalidate` > 0 supaya sinkronisasi yang berjalan saat `next build`
+    // tidak menandai halaman jadi dynamic (fetch `no-store` saat prerender
+    // akan melempar "dynamic server usage"). Kebaruan datanya tetap terjaga:
+    // `ensureFresh()` hanya menarik setiap TTL 10 menit, sama dengan nilai ini.
+    next: { revalidate: TTL_MS / 1000 },
   });
   if (!res.ok) throw new Error(`Graph API merespons HTTP ${res.status}`);
 
