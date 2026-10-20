@@ -39,6 +39,12 @@
   display: none;
 }
 
+/* Navbar layar sempit: hamburger kiri, logo kanan. Disembunyikan di desktop
+   karena sidebar kiri sudah memuat brand-nya sendiri. */
+.admin-topbar {
+  display: none;
+}
+
 .admin-sidebar-backdrop {
   display: none;
 }
@@ -566,6 +572,43 @@
   }
 
   /*
+   * Navbar layar sempit: logo Holiday di kiri, hamburger di kanan. `fixed` dan
+   * z-index di atas sidebar (60) serta backdrop (55) supaya tombol tutup tetap
+   * terjangkau saat panel geser terbuka.
+   */
+  .admin-topbar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 65;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 60px;
+    padding: 8px 12px;
+    background: var(--hb-primary);
+    box-shadow: 0 8px 20px -14px rgb(6 64 46 / 60%);
+  }
+
+  .admin-topbar__brand {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .admin-topbar__brand svg {
+    display: block;
+    height: 34px;
+    width: auto;
+  }
+
+  /* Brand di dalam panel geser tidak perlu tampil: logo sudah ada di navbar. */
+  .admin-brand {
+    display: none;
+  }
+
+  /*
    * Di layar sempit sidebar jadi panel geser: keluar dari aliran grid,
    * disembunyikan ke kiri, lalu meluncur masuk saat `.is-open`. Sidebar tetap
    * satu-satunya elemen dengan tinggi penuh, jadi menu bisa digulir sendiri.
@@ -589,10 +632,7 @@
 
   .admin-menubtn {
     display: inline-flex;
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 70;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
     width: 44px;
@@ -603,7 +643,6 @@
     background: var(--hb-sage);
     color: var(--hb-primary);
     cursor: pointer;
-    box-shadow: 0 6px 18px -8px rgb(6 64 46 / 55%);
   }
 
   .admin-menubtn__bars {
@@ -656,13 +695,13 @@
   }
 
   .admin-main {
-    /* Ruang untuk tombol hamburger yang mengapung di kiri atas. */
-    padding: 64px 16px 48px;
+    /* Ruang untuk navbar tetap di atas (tinggi 60px). */
+    padding: 76px 16px 48px;
   }
 
   /* Overlay loading: full-width (sidebar off-canvas tak terlihat), tapi
-     z-index sengaja di bawah sidebar (60), backdrop (55), dan tombol menu
-     (70) supaya sidebar yang terbuka tidak pernah ketutup spinner. */
+     z-index sengaja di bawah sidebar (60), backdrop (55), dan navbar (65)
+     supaya sidebar yang terbuka tidak pernah ketutup spinner. */
   .admin-nav-overlay {
     left: 0;
     z-index: 50;
@@ -1820,6 +1859,13 @@
   grid-template-columns: minmax(260px, 320px) 1fr;
   gap: 16px;
   align-items: start;
+  min-width: 0;
+}
+
+/* Anak grid wajib boleh menyusut, kalau tidak gambar yang sudah di-zoom
+ * memperlebar kolom dan menembus lebar halaman. */
+.admin-editor > * {
+  min-width: 0;
 }
 
 .admin-editor__side {
@@ -1868,6 +1914,7 @@
   place-items: center;
   height: 60vh;
   min-height: 320px;
+  max-width: 100%;
   padding: 0;
   background: var(--hb-light);
   border: 1px solid var(--hb-border);
@@ -1929,6 +1976,50 @@
   cursor: nwse-resize;
 }
 
+/*
+ * Scrollbar di dalam frame crop: penanda bagian gambar yang tersembunyi
+ * sekaligus alat geser. Hanya dirender saat gambar lebih besar dari frame.
+ * Diletakkan di atas overlay gelap kotak crop (z-index).
+ */
+.admin-crop__scrollbar {
+  position: absolute;
+  z-index: 3;
+  touch-action: none;
+  background: rgb(23 32 29 / 35%);
+  border-radius: 999px;
+}
+
+.admin-crop__scrollbar--y {
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  width: 8px;
+}
+
+.admin-crop__scrollbar--x {
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  height: 8px;
+}
+
+.admin-crop__thumb {
+  position: absolute;
+  pointer-events: none;
+  background: #fff;
+  border-radius: 999px;
+}
+
+.admin-crop__scrollbar--y .admin-crop__thumb {
+  left: 0;
+  right: 0;
+}
+
+.admin-crop__scrollbar--x .admin-crop__thumb {
+  top: 0;
+  bottom: 0;
+}
+
 .admin-crop__readout {
   margin: 10px 0 0;
   font-size: 12px;
@@ -1941,8 +2032,64 @@
     grid-template-columns: 1fr;
   }
 
+  /*
+   * Di layar sempit editor crop jadi fokus utama dan diletakkan di atas kedua
+   * form metadata — kalau tidak, admin harus menggulir melewati dua form
+   * sebelum bisa menyentuh gambar.
+   */
+  .admin-editor > .admin-card {
+    order: -1;
+  }
+
   .admin-crop__frame {
-    height: 46vh;
+    height: clamp(280px, 55vh, 460px);
+    min-height: 0;
+  }
+
+  /* Handle 14px terlalu kecil untuk jari; perbesar tanpa mengubah tata letak. */
+  .admin-crop__handle {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+  }
+
+  .admin-crop__handle--nw {
+    top: -11px;
+    left: -11px;
+  }
+
+  .admin-crop__handle--ne {
+    top: -11px;
+    right: -11px;
+  }
+
+  .admin-crop__handle--sw {
+    bottom: -11px;
+    left: -11px;
+  }
+
+  .admin-crop__handle--se {
+    bottom: -11px;
+    right: -11px;
+  }
+
+  .admin-crop__toolbar {
+    gap: 8px 10px;
+  }
+
+  /* Track scrollbar lebih tebal supaya bisa ditarik dengan jari. */
+  .admin-crop__scrollbar--y {
+    top: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: 10px;
+  }
+
+  .admin-crop__scrollbar--x {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    height: 10px;
   }
 }
 
@@ -2272,11 +2419,23 @@
   border-radius: 14px;
   box-shadow: 0 16px 30px -14px rgba(22, 60, 50, 0.25);
   border: 1px solid var(--hb-border);
-  display: none;
+  /* Animasi masuk menu, diselaraskan dengan override di green-palette.css. */
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .live-preview__frame.is-mobile .hb2d1n .main-nav.open {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .live-preview__frame.is-mobile .hb2d1n .menu-toggle {

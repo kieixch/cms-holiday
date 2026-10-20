@@ -54,20 +54,36 @@ export function AdminSidebar({ user }: Props) {
 
   return (
     <>
-      <button
-        type="button"
-        className="admin-menubtn"
-        aria-label={open ? "Tutup menu" : "Buka menu"}
-        aria-expanded={open}
-        aria-controls="admin-sidebar"
-        onClick={() => setOpen((value) => !value)}
-      >
-        <span className="admin-menubtn__bars" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
-      </button>
+      {/*
+        Navbar khusus layar sempit: logo di kiri, hamburger di kanan. Di desktop
+        bar ini disembunyikan — sidebar tampil permanen dengan brand-nya sendiri.
+        Sidebar tetap meluncur dari kiri seperti sebelumnya.
+      */}
+      <header className="admin-topbar">
+        <Link
+          href="/adm-cms-hb"
+          className="admin-topbar__brand"
+          aria-label="Holiday Banyuwangi"
+          onClick={close}
+        >
+          <LogoSvg tone="light" />
+        </Link>
+
+        <button
+          type="button"
+          className="admin-menubtn"
+          aria-label={open ? "Tutup menu" : "Buka menu"}
+          aria-expanded={open}
+          aria-controls="admin-sidebar"
+          onClick={() => setOpen((value) => !value)}
+        >
+          <span className="admin-menubtn__bars" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+      </header>
 
       <div
         className={`admin-sidebar-backdrop${open ? " is-open" : ""}`}

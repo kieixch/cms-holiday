@@ -102,14 +102,70 @@
   font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.01em;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 .hb2d1n .main-nav a:hover {
   color: var(--hb-forest);
+  /* Sedikit membesar sebagai umpan balik hover — berlaku di navbar desktop
+     maupun daftar menu yang muncul dari tombol hamburger. `transform` tidak
+     mengubah tata letak, jadi tombol di sekitarnya tidak bergeser. */
+  transform: scale(1.06);
 }
 .hb2d1n .menu-toggle {
   background: var(--hb-sage);
   color: var(--hb-primary);
   border-radius: 10px;
+}
+
+/* Ikon hamburger publik: tiga bar yang melipat jadi silang saat menu terbuka,
+   meniru animasi tombol hamburger panel admin (`.admin-menubtn__bars`). */
+.hb2d1n .menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hb2d1n .menu-toggle__bars {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 14px;
+}
+
+.hb2d1n .menu-toggle__bars span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.hb2d1n .menu-toggle__bars span:nth-child(1) {
+  top: 0;
+}
+
+.hb2d1n .menu-toggle__bars span:nth-child(2) {
+  top: 6px;
+}
+
+.hb2d1n .menu-toggle__bars span:nth-child(3) {
+  top: 12px;
+}
+
+.hb2d1n .menu-toggle[aria-expanded="true"] .menu-toggle__bars span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.hb2d1n .menu-toggle[aria-expanded="true"] .menu-toggle__bars span:nth-child(2) {
+  opacity: 0;
+}
+
+.hb2d1n .menu-toggle[aria-expanded="true"] .menu-toggle__bars span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
 }
 
 /* Navbar mengambang di atas hero full-bleed.
@@ -1472,6 +1528,56 @@ html.hbgl-scrolled .hb2d1n .site-header {
 @media (max-width: 1080px) {
   .hb2d1n .main-nav {
     border-radius: 14px;
+    /* Daftar menu muncul dengan animasi masuk (fade + turun sedikit) alih-alih
+       `display` instan dari legacy.css. `visibility` + `pointer-events` dipakai
+       supaya menu tersembunyi tetap tidak bisa diklik. */
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      visibility 0.2s ease;
+  }
+
+  .hb2d1n .main-nav.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  /* Di popup menu tautan menjadi kotak selebar menu dengan latar saat hover:
+     seluruh area bisa diklik, bukan hanya teksnya. Zoom `transform` sengaja
+     dimatikan di sini supaya kotak tidak melebar keluar popup. */
+  .hb2d1n .main-nav a {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transform-origin: left center;
+    transition:
+      background 0.15s ease,
+      color 0.2s ease;
+  }
+
+  .hb2d1n .main-nav a:hover {
+    background: var(--hb-sage);
+    transform: none;
+  }
+
+  /* Zoom hanya teks menu (span di dalam link), bukan kotaknya — kotak selebar
+     popup tidak ikut membesar dan tidak melebar keluar tepi menu. */
+  .hb2d1n .main-nav a > .main-nav__label {
+    display: inline-block;
+    transform-origin: left center;
+    transition: transform 0.2s ease;
+  }
+
+  .hb2d1n .main-nav a:hover > .main-nav__label {
+    transform: scale(1.08);
   }
   /* Tombol menu tetap berlatar solid (bukan transparan) di mobile, termasuk di
      halaman ber-hero yang navbar-nya sengaja dibuat tembus pandang. */

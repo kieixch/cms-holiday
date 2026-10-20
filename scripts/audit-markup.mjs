@@ -60,6 +60,12 @@ const IGNORE = [
   // tapi pemakaiannya di beranda disengaja dan datanya diatur lewat editor.
   /^gallery-grid$/,
   /^gallery-item$/,
+  // Teks menu navigasi dibungkus span agar zoom hover di popup hamburger
+  // hanya membesarkan teksnya, bukan kotak selebar menu.
+  /^main-nav__label$/,
+  // Ikon hamburger publik: teks ☰ diganti tiga bar beranimasi seperti
+  // tombol hamburger panel admin — kelas bar baru disengaja.
+  /^menu-toggle__bars$/,
 ];
 
 /**

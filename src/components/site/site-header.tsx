@@ -19,7 +19,9 @@ export function SiteHeader({ nav }: SiteHeaderProps) {
         <nav className="main-nav" id="hbNav">
           {nav.map((item) => (
             <a key={item.slug} href={`/${item.slug}/`}>
-              {item.label}
+              {/* Span label: di popup menu hanya teks yang mengecil-besar
+                  saat hover (zoom), sementara area klik tetap selebar menu. */}
+              <span className="main-nav__label">{item.label}</span>
             </a>
           ))}
         </nav>

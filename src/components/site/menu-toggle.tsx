@@ -27,7 +27,13 @@ export function MenuToggle() {
       aria-controls="hbNav"
       onClick={() => setOpen((v) => !v)}
     >
-      {open ? "✕" : "☰"}
+      {/* Tiga bar yang melipat jadi silang saat menu terbuka — meniru
+          animasi tombol hamburger panel admin. */}
+      <span className="menu-toggle__bars" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </span>
     </button>
   );
 }
