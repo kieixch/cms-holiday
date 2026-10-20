@@ -237,9 +237,11 @@ export function buildPackageSections(categories: PackageCategoryOption[]): Field
           width: "full",
           itemTitleField: "description",
           children: [
-            { kind: "number", name: "day", label: "Tanggal", required: true, width: "third", min: 1, max: 31 },
+            // Tanggal & tahun berupa teks, bukan angka: admin perlu bisa
+            // menulis "-" (belum diumumkan) selain angka.
+            { kind: "text", name: "day", label: "Tanggal", required: true, width: "third", placeholder: "12 atau -" },
             { kind: "text", name: "month", label: "Bulan", required: true, width: "third", placeholder: "Oktober" },
-            { kind: "number", name: "year", label: "Tahun", required: true, width: "third", min: 2020, max: 2100, placeholder: "2026" },
+            { kind: "text", name: "year", label: "Tahun", required: true, width: "third", placeholder: "2026 atau -" },
             { kind: "text", name: "description", label: "Deskripsi", width: "full", placeholder: "Sisa 5 seat" },
           ],
         },

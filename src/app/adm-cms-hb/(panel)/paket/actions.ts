@@ -59,10 +59,6 @@ function rows(value: unknown): Draft[] {
   return value.filter((item): item is Draft => typeof item === "object" && item !== null);
 }
 
-function int(value: unknown, fallback: number): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
 async function categoryOptions(): Promise<PackageCategoryOption[]> {
   const categories = await prisma.category.findMany({
     select: { slug: true, navLabel: true },
@@ -186,9 +182,9 @@ export async function savePackageAction(
   const schedule = rows(data.schedule)
     .filter((item) => str(item.month).trim() !== "")
     .map((item, index) => ({
-      day: Math.min(31, Math.max(1, int(item.day, 1))),
+      day: str(item.day).trim(),
       month: str(item.month).trim(),
-      year: int(item.year, new Date().getFullYear()),
+      year: str(item.year).trim(),
       description: str(item.description),
       order: orderOf(item.order, index),
     }));

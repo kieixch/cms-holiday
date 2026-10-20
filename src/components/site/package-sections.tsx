@@ -1,8 +1,9 @@
 export type ScheduleItemData = {
   id: string;
-  day: number;
+  /** Teks: angka tanggal ("12") atau "-" bila tanggal belum diumumkan. */
+  day: string;
   month: string;
-  year: number;
+  year: string;
   description: string;
 };
 

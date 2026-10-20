@@ -147,9 +147,10 @@ export type PricingBlock =
 export type GalleryImageOut = { url: string; alt: string };
 
 export type ScheduleItemOut = {
-  day: number;
+  /** Teks: angka tanggal ("12") atau "-" bila belum diumumkan. */
+  day: string;
   month: string;
-  year: number;
+  year: string;
   description: string;
 };
 

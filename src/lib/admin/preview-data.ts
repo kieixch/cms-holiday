@@ -187,9 +187,9 @@ export function packagePreview(base: PackagePreviewData, values: Values): Packag
     jadwalAnchor: str(values, "jadwalAnchor", base.jadwalAnchor),
     schedule: rows(values, "schedule").map((item, index) => ({
       id: `draft-${index}`,
-      day: num(item, "day", 1),
+      day: str(item, "day", ""),
       month: str(item, "month", ""),
-      year: num(item, "year", new Date().getFullYear()),
+      year: str(item, "year", ""),
       description: str(item, "description", ""),
     })),
 

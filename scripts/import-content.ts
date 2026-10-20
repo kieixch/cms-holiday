@@ -365,9 +365,10 @@ async function seedPackages(categoryIds: Map<string, string>) {
       await prisma.packageSchedule.createMany({
         data: scheduleItems.map((s, i) => ({
           packageId: created.id,
-          day: s.day,
+          // String() agar file konten lama yang masih menyimpan angka tetap masuk.
+          day: String(s.day),
           month: s.month,
-          year: s.year,
+          year: String(s.year),
           description: s.description ?? "",
           order: i,
         })),

@@ -523,12 +523,13 @@ model PackageSchedule {
   id          String  @id @default(cuid())
   packageId   String
   package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  /// Tanggal (1-31).
-  day         Int
+  /// Tanggal tampilan: angka ("12") atau teks bebas, mis. "-" bila belum
+  /// diumumkan. Teks memang dibutuhkan form jadwal, jadi bukan Int.
+  day         String
   /// Nama bulan tampilan, mis. "Oktober".
   month       String
-  /// Tahun, mis. 2026.
-  year        Int
+  /// Tahun tampilan, mis. "2026", atau teks bebas seperti "-".
+  year        String
   description String  @default("")
   order       Int     @default(0)
 }
