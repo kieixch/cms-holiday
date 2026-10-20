@@ -38,7 +38,7 @@ const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 6;
 
 type Rect = { x: number; y: number; w: number; h: number };
-type Handle = "move" | "nw" | "ne" | "sw" | "se";
+type Handle = "move" | "pan" | "scroll-x" | "scroll-y" | "nw" | "ne" | "sw" | "se";
 
 export function AssetEditor({
   asset,
@@ -153,9 +153,37 @@ function MetaForm({
 function CropEditor({ asset }: { asset: EditorAsset }) {
   const router = useRouter();
   const frameRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ handle: Handle; clientX: number; clientY: number; rect: Rect } | null>(
-    null,
-  );
+  const dragRef = useRef<{
+    handle: Handle;
+    clientX: number;
+    clientY: number;
+    rect: Rect;
+    pan: { x: number; y: number };
+    /** Kotak track scrollbar, hanya dipakai handle `scroll-x` / `scroll-y`. */
+    track?: { left: number; top: number; width: number; height: number };
+  } | null>(null);
+
+  /**
+   * Pointer aktif di area crop, kunci `pointerId`.
+   *
+   * Dipakai untuk mengenali gesture dua jari (pinch). Pointer Events tidak
+   * punya API pinch, jadi jarak antar-pointer dihitung manual.
+   */
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+
+  /**
+   * Kondisi awal satu gesture pinch.
+   *
+   * `scale` dan `pan` disimpan supaya titik tengah jari tetap menempel di
+   * bagian gambar yang sama selama zoom — tanpa itu gambar terasa "melompat".
+   */
+  const pinchRef = useRef<{
+    dist: number;
+    zoom: number;
+    mid: { x: number; y: number };
+    scale: number;
+    pan: { x: number; y: number };
+  } | null>(null);
 
   const naturalW = asset.width ?? 0;
   const naturalH = asset.height ?? 0;
@@ -182,6 +210,17 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
   const scale = fitScale * zoom;
   const displayW = viewW * scale;
   const displayH = viewH * scale;
+
+  // Scrollbar tampil hanya saat gambar memang lebih besar dari frame, jadi
+  // sekaligus jadi penanda bagian gambar yang tersembunyi.
+  const panRangeX = displayW - box.w;
+  const panRangeY = displayH - box.h;
+  const canPanX = panRangeX > 0.5 && box.w > 0;
+  const canPanY = panRangeY > 0.5 && box.h > 0;
+  const thumbXFrac = canPanX ? Math.max(0.12, box.w / displayW) : 1;
+  const thumbYFrac = canPanY ? Math.max(0.12, box.h / displayH) : 1;
+  const progressX = canPanX ? Math.min(1, Math.max(0, -pan.x / panRangeX)) : 0;
+  const progressY = canPanY ? Math.min(1, Math.max(0, -pan.y / panRangeY)) : 0;
 
   // Ukuran frame dibaca lewat ResizeObserver supaya editor ikut benar saat
   // jendela diubah atau panel admin menyempit di layar kecil.
@@ -217,26 +256,90 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
   /**
    * Geser gambar supaya bagian yang tidak tertutup frame tidak bisa dibuka.
    *
-   * Kalau gambar lebih kecil dari frame, pan dinolkan supaya admin selalu
-   * melihat gambar utuh.
+   * Kalau gambar lebih kecil dari frame pada sebuah sumbu, pan sumbu itu
+   * dinolkan supaya admin selalu melihat gambar utuh. Menerima ukuran tampilan
+   * eksplisit karena pinch mengubah zoom dan pan dalam satu handler, sebelum
+   * state `zoom` baru sempat ter-render.
    */
-  const clampPan = useCallback(
-    (next: { x: number; y: number }) => ({
-      x: displayW <= box.w ? 0 : Math.min(0, Math.max(box.w - displayW, next.x)),
-      y: displayH <= box.h ? 0 : Math.min(0, Math.max(box.h - displayH, next.y)),
+  const clampPanAt = useCallback(
+    (next: { x: number; y: number }, width: number, height: number) => ({
+      x: width <= box.w ? 0 : Math.min(0, Math.max(box.w - width, next.x)),
+      y: height <= box.h ? 0 : Math.min(0, Math.max(box.h - height, next.y)),
     }),
-    [box.w, box.h, displayW, displayH],
+    [box.w, box.h],
   );
 
+  const clampPan = useCallback(
+    (next: { x: number; y: number }) => clampPanAt(next, displayW, displayH),
+    [clampPanAt, displayW, displayH],
+  );
+
+  const clampZoom = useCallback((z: number) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z)), []);
+
+  /** Posisi pointer relatif kiri-atas frame. */
+  const framePoint = useCallback((clientX: number, clientY: number) => {
+    const el = frameRef.current;
+    if (!el) return { x: 0, y: 0 };
+    const r = el.getBoundingClientRect();
+    return { x: clientX - r.left, y: clientY - r.top };
+  }, []);
+
+  const pinchMetrics = useCallback(() => {
+    const pts = [...pointersRef.current.values()];
+    return {
+      dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y),
+      mid: { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 },
+    };
+  }, []);
+
   function startDrag(e: React.PointerEvent, handle: Handle) {
-    if (!rect) return;
+    if (handle !== "pan" && !rect) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { handle, clientX: e.clientX, clientY: e.clientY, rect };
+    dragRef.current = { handle, clientX: e.clientX, clientY: e.clientY, rect: rect ?? { x: 0, y: 0, w: 0, h: 0 }, pan: { ...pan } };
   }
 
   function onPointerMove(e: React.PointerEvent) {
+    if (pointersRef.current.has(e.pointerId)) {
+      const p = framePoint(e.clientX, e.clientY);
+      pointersRef.current.set(e.pointerId, p);
+    }
+
+    // Pinch: dua jari di area crop mengubah zoom gambar saja, bukan halaman.
+    const pinch = pinchRef.current;
+    if (pinch && pointersRef.current.size >= 2) {
+      const { dist, mid } = pinchMetrics();
+      const nextZoom = clampZoom(pinch.zoom * (dist / Math.max(1, pinch.dist)));
+      const nextScale = fitScale * nextZoom;
+      const imgX = (pinch.mid.x - pinch.pan.x) / pinch.scale;
+      const imgY = (pinch.mid.y - pinch.pan.y) / pinch.scale;
+      setZoom(nextZoom);
+      setPan(
+        clampPanAt(
+          { x: mid.x - imgX * nextScale, y: mid.y - imgY * nextScale },
+          viewW * nextScale,
+          viewH * nextScale,
+        ),
+      );
+      return;
+    }
+
     const drag = dragRef.current;
     if (!drag || scale <= 0) return;
+
+    if (drag.handle === "pan") {
+      setPan(
+        clampPan({
+          x: drag.pan.x + (e.clientX - drag.clientX),
+          y: drag.pan.y + (e.clientY - drag.clientY),
+        }),
+      );
+      return;
+    }
+
+    if (drag.handle === "scroll-x" || drag.handle === "scroll-y") {
+      applyScroll(drag, e.clientX, e.clientY);
+      return;
+    }
 
     // Delta layar -> piksel gambar asli, jadi kecepatan drag tidak ikut
     // berubah oleh zoom.
@@ -272,10 +375,72 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
     dragRef.current = null;
   }
 
+  /**
+   * Terapkan posisi pan dari sentuhan pada track scrollbar.
+   *
+   * Posisi jari dipetakan 0..1 sepanjang track ke 0..selisih(display, frame),
+   * jadi scrollbar selalu mewakili seluruh gambar.
+   */
+  function applyScroll(
+    drag: NonNullable<typeof dragRef.current>,
+    clientX: number,
+    clientY: number,
+  ) {
+    const track = drag.track;
+    if (!track) return;
+    const ratio = (value: number, start: number, length: number) =>
+      length <= 0 ? 0 : Math.min(1, Math.max(0, (value - start) / length));
+
+    if (drag.handle === "scroll-x") {
+      const hidden = displayW - box.w;
+      if (hidden <= 0) return;
+      setPan(clampPan({ ...drag.pan, x: -ratio(clientX, track.left, track.width) * hidden }));
+    } else {
+      const hidden = displayH - box.h;
+      if (hidden <= 0) return;
+      setPan(clampPan({ ...drag.pan, y: -ratio(clientY, track.top, track.height) * hidden }));
+    }
+  }
+
+  function startScroll(e: React.PointerEvent, axis: "x" | "y") {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const drag = {
+      handle: axis === "x" ? ("scroll-x" as const) : ("scroll-y" as const),
+      clientX: e.clientX,
+      clientY: e.clientY,
+      rect: rect ?? { x: 0, y: 0, w: 0, h: 0 },
+      pan: { ...pan },
+      track: { left: r.left, top: r.top, width: r.width, height: r.height },
+    };
+    dragRef.current = drag;
+    applyScroll(drag, e.clientX, e.clientY);
+  }
+
+  /** Zoom dari tombol, berpusat di tengah frame supaya gambar tidak "kabur". */
+  function zoomBy(factor: number) {
+    const nextZoom = clampZoom(zoom * factor);
+    if (nextZoom === zoom) return;
+    const nextScale = fitScale * nextZoom;
+    const mid = { x: box.w / 2, y: box.h / 2 };
+    const imgX = (mid.x - pan.x) / scale;
+    const imgY = (mid.y - pan.y) / scale;
+    setZoom(nextZoom);
+    setPan(
+      clampPanAt(
+        { x: mid.x - imgX * nextScale, y: mid.y - imgY * nextScale },
+        viewW * nextScale,
+        viewH * nextScale,
+      ),
+    );
+  }
+
   function rotateBy(delta: number) {
     if (!rotatable) return;
     setRotation((r) => (r + delta + 360) % 360);
-    setPan((p) => ({ x: -p.y, y: p.x }));
+    // Rotasi menukar lebar/tinggi tampilan; memindahkan pan lama ke sumbu baru
+    // membuat gambar tampak terpotong, jadi tampilan dikembalikan ke tengah.
+    setPan({ x: 0, y: 0 });
   }
 
   function chooseAspect(key: AspectKey) {
@@ -299,26 +464,29 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
   }
 
   function onFramePointerDown(e: React.PointerEvent) {
-    // Drag di area kosong = menggeser gambar, berguna saat zoom sudah besar.
-    if ((e.target as HTMLElement).closest(".admin-crop__box")) return;
-    if (displayW <= box.w && displayH <= box.h) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    pointersRef.current.set(e.pointerId, framePoint(e.clientX, e.clientY));
 
-    const origin = { x: e.clientX, y: e.clientY, pan };
-    const move = (ev: PointerEvent) => {
-      setPan(
-        clampPan({
-          x: origin.pan.x + (ev.clientX - origin.x),
-          y: origin.pan.y + (ev.clientY - origin.y),
-        }),
-      );
-    };
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    // Jari kedua memulai pinch: batalkan drag kotak/pan supaya tidak berebut
+    // memperlakukan pointer yang sama.
+    if (pointersRef.current.size === 2) {
+      const { dist, mid } = pinchMetrics();
+      dragRef.current = null;
+      pinchRef.current = { dist, zoom, mid, scale, pan: { ...pan } };
+      return;
+    }
+    if (pointersRef.current.size > 2) return;
+
+    // Drag di area luar kotak crop = menggeser gambar, berguna saat zoom besar
+    // atau saat menjangkau bagian gambar yang tertutup kotak.
+    if ((e.target as HTMLElement).closest(".admin-crop__scrollbar")) return;
+    if ((e.target as HTMLElement).closest(".admin-crop__box")) return;
+    startDrag(e, "pan");
+  }
+
+  function onFramePointerUp(e: React.PointerEvent) {
+    pointersRef.current.delete(e.pointerId);
+    if (pointersRef.current.size < 2) pinchRef.current = null;
+    endDrag();
   }
 
   async function save() {
@@ -422,7 +590,7 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
           <button
             type="button"
             className="admin-btn admin-btn--small admin-btn--ghost"
-            onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z / 1.25))}
+            onClick={() => zoomBy(1 / 1.25)}
             aria-label="Perkecil tampilan"
           >
             −
@@ -431,7 +599,7 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
           <button
             type="button"
             className="admin-btn admin-btn--small admin-btn--ghost"
-            onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z * 1.25))}
+            onClick={() => zoomBy(1.25)}
             aria-label="Perbesar tampilan"
           >
             +
@@ -449,11 +617,12 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
 
       <div
         className="admin-crop__frame"
+        id="crop-viewport"
         ref={frameRef}
         onPointerDown={onFramePointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerUp={onFramePointerUp}
+        onPointerCancel={onFramePointerUp}
       >
         <div
           className="admin-crop__canvas"
@@ -470,9 +639,15 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
             height={naturalH}
             unoptimized
             style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
               width: `${naturalW * scale}px`,
               height: `${naturalH * scale}px`,
-              transform: `rotate(${rotation}deg)`,
+              // Dipusatkan dulu, baru diputar: tanpa `translate(-50%, -50%)`
+              // gambar 90°/270° (yang menukar lebar/tinggi canvas) meleset
+              // keluar canvas dan tampak terpotong.
+              transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
             }}
           />
 
@@ -486,7 +661,12 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
               width: `${rect!.w * scale}px`,
               height: `${rect!.h * scale}px`,
             }}
-            onPointerDown={(e) => startDrag(e, "move")}
+            onPointerDown={(e) => {
+              // Pointerdown pada handle ikut mem-bubble ke kotak; tanpa cek ini
+              // drag "move" kotak selalu menimpa resize sudut.
+              if ((e.target as HTMLElement).closest(".admin-crop__handle")) return;
+              startDrag(e, "move");
+            }}
           >
             {(["nw", "ne", "sw", "se"] as const).map((corner) => (
               <span
@@ -497,6 +677,46 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
             ))}
           </div>
         </div>
+
+        {canPanY ? (
+          <div
+            className="admin-crop__scrollbar admin-crop__scrollbar--y"
+            role="scrollbar"
+            aria-label="Geser tampilan atas-bawah"
+            aria-orientation="vertical"
+            aria-controls="crop-viewport"
+            aria-valuenow={Math.round(progressY * 100)}
+            onPointerDown={(e) => startScroll(e, "y")}
+          >
+            <span
+              className="admin-crop__thumb"
+              style={{
+                height: `${thumbYFrac * 100}%`,
+                top: `${progressY * (1 - thumbYFrac) * 100}%`,
+              }}
+            />
+          </div>
+        ) : null}
+
+        {canPanX ? (
+          <div
+            className="admin-crop__scrollbar admin-crop__scrollbar--x"
+            role="scrollbar"
+            aria-label="Geser tampilan kiri-kanan"
+            aria-orientation="horizontal"
+            aria-controls="crop-viewport"
+            aria-valuenow={Math.round(progressX * 100)}
+            onPointerDown={(e) => startScroll(e, "x")}
+          >
+            <span
+              className="admin-crop__thumb"
+              style={{
+                width: `${thumbXFrac * 100}%`,
+                left: `${progressX * (1 - thumbXFrac) * 100}%`,
+              }}
+            />
+          </div>
+        ) : null}
       </div>
 
       <p className="admin-crop__readout">
