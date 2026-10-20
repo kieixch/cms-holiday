@@ -1577,7 +1577,22 @@
       },
       "cta": null,
       "note": null,
-      "schedule": null,
+      "schedule": {
+        "tag": "Jadwal",
+        "title": "Jadwal",
+        "accent": "Keberangkatan",
+        "suffix": "",
+        "description": "",
+        "anchor": "jadwal",
+        "items": [
+          {
+            "day": "-",
+            "month": "Oktober",
+            "year": "-",
+            "description": "uji cross"
+          }
+        ]
+      },
       "itinerary": {
         "tag": "",
         "title": "",
@@ -1609,7 +1624,12 @@
         "gridColumns": 3,
         "images": []
       },
-      "waMessage": "Hai Holiday Banyuwangi, aku mau booking Open Trip Ijen"
+      "waMessage": "Hai Holiday Banyuwangi, aku mau booking Open Trip Ijen",
+      "whatsapp": {
+        "number": "628133111543",
+        "greeting": "",
+        "ctaNumber": "628133111543"
+      }
     },
     {
       "slug": "open-trip-ijen-baluran",

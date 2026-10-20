@@ -328,6 +328,7 @@ export async function savePackageAction(
       );
     }
   } catch (error) {
+    console.error("savePackageAction error:", error);
     return { message: `Gagal menyimpan: ${describe(error)}` };
   }
 
@@ -360,6 +361,8 @@ async function writePricing(
   priceRows: PriceRowDraft[],
   priceItems: PriceItemDraft[],
 ) {
+  await tx.pricing.deleteMany({ where: { packageId } });
+
   if (priceColumns.length === 0 && priceRows.length === 0 && priceItems.length === 0) return;
 
   const created = await tx.pricing.create({
@@ -443,6 +446,8 @@ function describe(error: unknown): string {
     const code = String((error as { code: unknown }).code);
     if (code === "P2002") return "ada nilai unik yang bentrok, periksa slug.";
     if (code === "P2003") return "masih ada data lain yang menunjuk ke paket ini.";
+    return `Prisma ${code}: ${(error as any).message || "terjadi kesalahan"}`;
   }
+  if (error instanceof Error) return error.message;
   return "terjadi kesalahan di server.";
 }
