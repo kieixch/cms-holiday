@@ -120,13 +120,10 @@
 }
 
 /* Ikon hamburger publik: tiga bar yang melipat jadi silang saat menu terbuka,
-   meniru animasi tombol hamburger panel admin (`.admin-menubtn__bars`). */
-.hb2d1n .menu-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
+   meniru animasi tombol hamburger panel admin (`.admin-menubtn__bars`).
+   `display` tombol sengaja TIDAK di-override di sini — legacy menyetel
+   `display: none` di desktop (hanya mobile yang menampilkannya), dan aturan
+   flex-nya ditambahkan di media <=1080px di bawah. */
 .hb2d1n .menu-toggle__bars {
   position: relative;
   display: block;
@@ -1586,6 +1583,11 @@ html.hbgl-scrolled .hb2d1n .site-header {
     background: var(--hb-white);
     border: 1px solid var(--hb-border);
     box-shadow: 0 6px 18px -12px rgba(22, 60, 50, 0.4);
+    /* Hanya di mobile (media ini) hamburger tampil; flex menengahkan bar
+       ikon di dalam kotak tombol. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   /* Daftar menu yang terbuka selalu berlatar solid dengan teks gelap, walau
      header di atas hero transparan — supaya tautannya tidak "hilang". */
