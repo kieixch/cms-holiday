@@ -270,40 +270,38 @@ export async function savePackageAction(
 
   try {
     if (id) {
-// Tulis ulang penuh: baris yang tidak lagi ada di form ikut dihapus.
-      // `pricing: { delete: true }` dipakai karena relasi `Pricing`
-      // satu-ke-satu, jadi tidak ada `deleteMany` — dan `PriceValue` sudah
-      // ikut terhapus lewat cascade dari kolom maupun barisnya.
-      await prisma.$transaction(async (tx) => {
-        await tx.package.update({
-          where: { id },
-          data: {
-            ...columns,
-            name,
-            slug,
-            category: { connect: { id: category.id } },
-            cardDays: { deleteMany: {}, create: cardDays },
-            cardPrices: { deleteMany: {}, create: cardPrices },
-            cardFacilities: { deleteMany: {}, create: cardFacilities },
-            schedule: { deleteMany: {}, create: schedule },
-            itinerary: { deleteMany: {}, create: itinerary },
-            facilities: { deleteMany: {}, create: facilities },
-            notes: { deleteMany: {}, create: notes },
-            gallery: { deleteMany: {}, create: gallery },
-          },
-        });
+      // Tulis ulang penuh: baris yang tidak lagi ada di form ikut dihapus.
+      // Timeout dinaikkan dari default 5 dtk karena banyak relasi ditulis
+      // ulang berurutan (schedule, itinerary, gallery, pricing, dll).
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.package.update({
+            where: { id },
+            data: {
+              ...columns,
+              name,
+              slug,
+              category: { connect: { id: category.id } },
+              cardDays: { deleteMany: {}, create: cardDays },
+              cardPrices: { deleteMany: {}, create: cardPrices },
+              cardFacilities: { deleteMany: {}, create: cardFacilities },
+              schedule: { deleteMany: {}, create: schedule },
+              itinerary: { deleteMany: {}, create: itinerary },
+              facilities: { deleteMany: {}, create: facilities },
+              notes: { deleteMany: {}, create: notes },
+              gallery: { deleteMany: {}, create: gallery },
+            },
+          });
 
-        // Tabel harga ditulis ulang penuh, tapi tidak lewat `pricing: { delete:
-        // true }` di update tadi. Relasi itu satu-ke-satu, dan Prisma menolak
-        // `delete` kalau barisnya memang tidak ada — paket Open Trip bawaan
-        // memang tidak punya tabel harga sama sekali, jadi bentuk itu membuat
-        // menyimpan paket itu selalu gagal dengan P2025. `deleteMany` aman
-        // kalau tabelnya belum pernah dibuat, dan baris lama tetap ikut hilang
-        // lewat cascade dari kolom, baris, serta nilai harganya.
-        await tx.pricing.deleteMany({ where: { packageId: id } });
-
-        await writePricing(tx, id, priceChildren, priceColumns, priceRows, priceItems);
-      });
+          // Tabel harga ditulis ulang penuh oleh `writePricing` (ia memanggil
+          // `pricing.deleteMany` sendiri, aman kalau tabelnya belum pernah
+          // dibuat — paket Open Trip bawaan misalnya). `pricing: { delete: true }`
+          // di update tadi tidak dipakai karena Prisma menolak `delete` kalau
+          // barisnya tidak ada (P2025).
+          await writePricing(tx, id, priceChildren, priceColumns, priceRows, priceItems);
+        },
+        { timeout: 30_000 },
+      );
     } else {
       const created = await prisma.package.create({
         data: {
@@ -323,8 +321,9 @@ export async function savePackageAction(
         select: { id: true },
       });
 
-      await prisma.$transaction((tx) =>
-        writePricing(tx, created.id, priceChildren, priceColumns, priceRows, priceItems),
+      await prisma.$transaction(
+        (tx) => writePricing(tx, created.id, priceChildren, priceColumns, priceRows, priceItems),
+        { timeout: 30_000 },
       );
     }
   } catch (error) {
