@@ -18,6 +18,14 @@ const PAGE_SIZE = 60;
 const MAX_PAGE_SIZE = 120;
 /** Maksimum file per sekali unggah; mencegah satu request menahan memori lama. */
 const MAX_FILES = 10;
+/**
+ * Batas total per request, dipakai untuk pre-check `Content-Length`.
+ * Disamakan dengan `experimental.proxyClientMaxBodySize` di next.config.ts
+ * (100MB): kalau route mengizinkan lebih dari limit proxy, body dipotong
+ * diam-diam dan `request.formData()` gagal parse dengan 400 yang
+ * membingungkan. 100MB cukup untuk 10 foto kamera HP (~3-8MB per file).
+ */
+const MAX_TOTAL_UPLOAD_BYTES = 100 * 1024 * 1024;
 
 /**
  * Daftar aset untuk picker gambar.
@@ -114,7 +122,7 @@ export async function POST(request: Request) {
 
   // Tolak lebih awal berdasar `Content-Length` sebelum body di-buffer ke memori.
   const declaredLength = Number(request.headers.get("content-length") ?? "0");
-  const maxTotal = maxUploadBytes() * MAX_FILES;
+  const maxTotal = Math.min(maxUploadBytes() * MAX_FILES, MAX_TOTAL_UPLOAD_BYTES);
   if (Number.isFinite(declaredLength) && declaredLength > maxTotal) {
     return NextResponse.json(
       { error: "Total ukuran unggahan terlalu besar." },

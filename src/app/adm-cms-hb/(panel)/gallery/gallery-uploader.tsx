@@ -50,10 +50,15 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
     };
   }, []);
 
+  // `reset` sengaja TIDAK menyentuh `message`. Kedua pemanggilnya (jalur
+  // error di `load` dan `onerror`) memanggil `setMessage` sesaat sebelum
+  // `reset` — kalau `reset` ikut `setMessage(null)`, React batching
+  // menjadikan null sebagai state akhir dan notifikasi error tidak pernah
+  // tampil. Itu bug nyata: upload yang gagal selalu diam tanpa pesan apa
+  // pun. Pembersihan pesan saat submit dilakukan eksplisit di `onSubmit`.
   function reset() {
     setBusy(false);
     setPercent(null);
-    setMessage(null);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -127,7 +132,9 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
       try {
         payload = JSON.parse(xhr.responseText);
       } catch {
-        payload = { error: "Respons server tidak bisa dibaca." };
+        // HTML error page (mis. 500) tidak bisa diparse sebagai JSON —
+        // sertakan status supaya penyebabnya bisa dilacak dari pesan.
+        payload = { error: `Respons server tidak terbaca (HTTP ${xhr.status}).` };
       }
 
       if (payload.saved?.length) {
@@ -147,7 +154,10 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
         return;
       }
 
-      setMessage({ kind: "error", text: payload.error ?? "Upload gagal." });
+      setMessage({
+        kind: "error",
+        text: payload.error ?? `Upload gagal (HTTP ${xhr.status}).`,
+      });
       reset();
     });
 

@@ -135,6 +135,25 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp", "@prisma/adapter-pg", "pg"],
 
   /**
+   * Batas buffer body untuk request yang melewati `proxy.ts` (matcher
+   * mencakup `/api/admin/*` dan `/adm-cms-hb/*`). Default Next hanya 10MB:
+   * body di atasnya TIDAK ditolak, melainkan dipotong diam-diam (hanya
+   * console.warn), sehingga `request.formData()` membaca multipart yang
+   * terpotong dan gagal parse — upload multi-file >10MB selalu error 400
+   * "Permintaan tidak bisa dibaca". Nilai ini harus >= total maksimum
+   * upload galeri (lihat `MAX_TOTAL_UPLOAD_BYTES` di
+   * `src/app/api/admin/gallery/route.ts`, disamakan menjadi 100MB).
+   *
+   * Catatan: buffering terjadi SEBELUM auth check di route, jadi angka
+   * besar sedikit memperbesar permukaan DoS memori lewat request tanpa
+   * sesi. Dibatasi 100MB sebagai kompromi; batas per-file (25MB, env
+   * MEDIA_MAX_BYTES) tidak diubah.
+   */
+  experimental: {
+    proxyClientMaxBodySize: "100mb",
+  },
+
+  /**
    * `/uploads/[...key]` membaca path dinamis dari disk. Turbopack akan
    * memperingatkan bahwa "dynamic filesystem access causes tracing of the whole
    * project". Peringatan itu tidak bisa dihilangkan — aksesnya memang dinamis,
