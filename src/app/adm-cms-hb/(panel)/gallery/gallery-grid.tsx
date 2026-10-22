@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 
 import { deleteAssetAndRedirectAction, updateAssetAltAction } from "./actions";
+import { clampPer, DEFAULT_PER, ROWS_PER_PAGE } from "./pagination";
 
 type Asset = {
   id: string;
@@ -21,9 +23,63 @@ type Asset = {
   derivedFromId: string | null;
 };
 
-export function GalleryGrid({ assets }: { assets: Asset[] }) {
+export function GalleryGrid({
+  assets,
+  per,
+  term,
+}: {
+  assets: Asset[];
+  per: number;
+  term: string;
+}) {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Jumlah kolom ditentukan CSS (`auto-fill`), bukan angka tetap, jadi server
+  // tidak bisa tahu berapa item yang pas untuk 3 baris. Ukur di sini lalu minta
+  // server mengirim ulang dengan `?per=` yang benar. Reset ke halaman 1 karena
+  // offset halaman lama jadi tidak relevan setelah ukuran halaman berubah.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const sync = () => {
+      const tracks = getComputedStyle(grid).gridTemplateColumns;
+      const columns = tracks.split(" ").filter(Boolean).length;
+      if (columns === 0) return;
+
+      // Clamp yang sama dengan server: tanpa ini layar sangat lebar (atau
+      // `per` yang sudah dibatasi server) bisa memicu replace berulang.
+      const nextPer = clampPer(columns * ROWS_PER_PAGE);
+      if (nextPer === per) return;
+
+      const params = new URLSearchParams();
+      if (term) params.set("q", term);
+      if (nextPer !== DEFAULT_PER) params.set("per", String(nextPer));
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    };
+
+    sync();
+
+    // ResizeObserver, bukan `resize` window: lebar grid juga berubah saat
+    // sidebar ditutup/dibuka tanpa viewport berubah.
+    let debounce: ReturnType<typeof setTimeout> | undefined;
+    const observer = new ResizeObserver(() => {
+      clearTimeout(debounce);
+      debounce = setTimeout(sync, 200);
+    });
+    observer.observe(grid);
+
+    return () => {
+      clearTimeout(debounce);
+      observer.disconnect();
+    };
+  }, [per, term, pathname, router]);
+
   return (
-    <div className="admin-media-grid">
+    <div className="admin-media-grid" ref={gridRef}>
       {assets.map((asset) => (
         <AssetCard key={asset.id} asset={asset} />
       ))}
