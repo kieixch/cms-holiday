@@ -445,7 +445,7 @@ function describe(error: unknown): string {
     const code = String((error as { code: unknown }).code);
     if (code === "P2002") return "ada nilai unik yang bentrok, periksa slug.";
     if (code === "P2003") return "masih ada data lain yang menunjuk ke paket ini.";
-    return `Prisma ${code}: ${(error as any).message || "terjadi kesalahan"}`;
+    return `Prisma ${code}: ${(error as { message?: string }).message || "terjadi kesalahan"}`;
   }
   if (error instanceof Error) return error.message;
   return "terjadi kesalahan di server.";
