@@ -29,6 +29,7 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
   const [alt, setAlt] = useState("");
   const [busy, setBusy] = useState(false);
   const [percent, setPercent] = useState<number | null>(null);
+  const [stage, setStage] = useState<string | null>(null);
   const [message, setMessage] = useState<Note | null>(null);
   const [picked, setPicked] = useState<Picked[]>([]);
 
@@ -64,6 +65,7 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
   function reset() {
     setBusy(false);
     setPercent(null);
+    setStage(null);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -120,13 +122,13 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
    * progress bar bisa dihitung terhadap total seluruh file.
    */
   function uploadFile(
-    item: Picked,
+    file: File,
     altText: string,
     onProgress: (loaded: number) => void,
   ): Promise<FileOutcome> {
     return new Promise((resolve) => {
       const body = new FormData();
-      body.append("file", item.file);
+      body.append("file", file);
       if (folder) body.append("folder", folder);
       if (altText) body.append("alt", altText);
 
@@ -173,11 +175,12 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
   /**
    * Unggah semua file yang dipilih, satu file per request.
    *
-   * Satu file per request (bukan semua file sekaligus) karena ada lapisan
-   * di depan Next — proxy/nginx di VPS — yang menolak body besar dengan 413
-   * sebelum request sampai ke aplikasi. Memecah upload jadi request kecil
-   * membuat banyak foto besar tetap bisa masuk, dan membuat status 413
-   * menunjuk ke file yang benar-benar terlalu besar.
+   * Dua fase:
+   *   1. Perkecil & konversi ke WebP di browser. Vercel membatasi body request
+   *      ke 4.5 MB dan batas itu TIDAK bisa dinaikkan lewat config, jadi foto
+   *      kamera (3-25 MB) harus dikecilkan sebelum dikirim.
+   *   2. Kirim satu file per request, supaya request tetap kecil dan status
+   *      413 (kalau ada proxy lain di depan) menunjuk ke file yang salah.
    */
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -191,22 +194,30 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
     setPercent(0);
 
     const items = picked;
-    const totalBytes = items.reduce((sum, item) => sum + item.file.size, 0) || 1;
+    const prepared: { file: File; original: string }[] = [];
+    for (let i = 0; i < items.length; i++) {
+      setStage(`Menyiapkan foto ${i + 1} dari ${items.length}…`);
+      const file = await compressForUpload(items[i].file);
+      prepared.push({ file, original: items[i].file.name });
+    }
+    setStage(null);
+
+    const totalBytes = prepared.reduce((sum, p) => sum + p.file.size, 0) || 1;
     let doneBytes = 0;
     let aborted = false;
     const saved: Uploaded[] = [];
     const failures: Failure[] = [];
 
-    for (const item of items) {
-      const outcome = await uploadFile(item, alt.trim(), (loaded) => {
+    for (const { file, original } of prepared) {
+      const outcome = await uploadFile(file, alt.trim(), (loaded) => {
         setPercent(Math.round(((doneBytes + loaded) / totalBytes) * 100));
       });
-      doneBytes += item.file.size;
+      doneBytes += file.size;
 
       if (outcome.ok) {
         saved.push(...outcome.saved);
       } else {
-        failures.push({ name: item.file.name, error: outcome.error });
+        failures.push({ name: original, error: outcome.error });
         // Sesi habis atau server error: sisa file tidak akan berhasil juga,
         // jadi berhenti daripada menumpuk request yang pasti gagal.
         if (outcome.fatal) {
@@ -343,6 +354,7 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
         </div>
       ) : null}
 
+      {/* Progress upload */}
       {percent !== null && (
         <div
           className="admin-progress"
@@ -356,13 +368,15 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
         </div>
       )}
 
+      {stage && <p className="admin-hint">{stage}</p>}
+
       <div className="admin-media-upload__actions">
         <button type="submit" className="admin-btn" disabled={busy || picked.length === 0}>
           {busy ? "Mengunggah…" : `Unggah ${picked.length > 0 ? `${picked.length} foto` : ""}`}
         </button>
         <p className="admin-hint">
-          Otomatis diperkecil dan dikonversi ke WebP. Maks 25 MB per file, dikirim satu per satu
-          supaya file besar tidak ditolak proxy. SVG ditolak karena bisa jadi celah XSS.
+          Foto diperkecil & dikonversi ke WebP di browser sebelum dikirim (maks 2400px), lalu
+          divalidasi ulang di server. SVG ditolak karena bisa jadi celah XSS.
         </p>
       </div>
 
@@ -379,6 +393,86 @@ function kb(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+/** Batas dimensi & kualitas, sama dengan default server (`MEDIA_MAX_EDGE`, `MEDIA_WEBP_QUALITY`). */
+const COMPRESS_MAX_EDGE = 2400;
+const COMPRESS_QUALITY = 0.82;
+
+/** Format yang bisa dikecilkan di browser. SVG sengaja tidak termasuk. */
+const COMPRESSIBLE = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
+
+type Drawable = ImageBitmap | HTMLImageElement;
+
+async function loadDrawable(file: File): Promise<Drawable | null> {
+  if (typeof createImageBitmap === "function") {
+    try {
+      // `from-image` menghormati orientasi EXIF, sama seperti `rotate()` di sharp.
+      return await createImageBitmap(file, { imageOrientation: "from-image" });
+    } catch {
+      /* jatuh ke <img> di bawah */
+    }
+  }
+
+  const url = URL.createObjectURL(file);
+  try {
+    return await new Promise<HTMLImageElement | null>((resolve) => {
+      const img = new window.Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
+ * Perkecil + konversi ke WebP di browser sebelum diunggah.
+ *
+ * Vercel menolak body request di atas 4.5 MB dan angka itu tidak bisa
+ * dinaikkan, jadi foto kamera harus dikecilkan dulu di klien. Server tetap
+ * memvalidasi dan meng-encode ulang dengan sharp — ini hanya supaya request
+ * muat, bukan pengganti validasi server.
+ *
+ * Kalau hasil kompresi tidak lebih kecil (gambar sudah kecil), file asli
+ * dikembalikan; kalau proses gagal, file asli juga dikembalikan dan server
+ * yang memutuskan.
+ */
+async function compressForUpload(file: File): Promise<File> {
+  if (!COMPRESSIBLE.has(file.type.toLowerCase())) return file;
+
+  let drawable: Drawable | null = null;
+  try {
+    drawable = await loadDrawable(file);
+    if (!drawable) return file;
+
+    const scale = Math.min(
+      1,
+      COMPRESS_MAX_EDGE / Math.max(drawable.width, drawable.height),
+    );
+    const width = Math.max(1, Math.round(drawable.width * scale));
+    const height = Math.max(1, Math.round(drawable.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(drawable, 0, 0, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", COMPRESS_QUALITY),
+    );
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name, { type: blob.type || "image/webp" });
+  } catch {
+    return file;
+  } finally {
+    if (drawable && typeof ImageBitmap !== "undefined" && drawable instanceof ImageBitmap) {
+      drawable.close();
+    }
+  }
 }
 
 /**
