@@ -125,7 +125,7 @@ export async function POST(request: Request) {
   const maxTotal = Math.min(maxUploadBytes() * MAX_FILES, MAX_TOTAL_UPLOAD_BYTES);
   if (Number.isFinite(declaredLength) && declaredLength > maxTotal) {
     return NextResponse.json(
-      { error: "Total ukuran unggahan terlalu besar." },
+      { error: `Ukuran unggahan melebihi batas ${Math.round(maxTotal / 1024 / 1024)} MB.` },
       { status: 413 },
     );
   }

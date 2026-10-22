@@ -7,6 +7,11 @@ type Uploaded = { id: string; url: string; filename: string };
 type Failure = { name: string; error: string };
 type Note = { kind: "ok" | "error"; text: string };
 
+/** Hasil satu request upload (satu file). */
+type FileOutcome =
+  | { ok: true; saved: Uploaded[] }
+  | { ok: false; error: string; fatal: boolean };
+
 /** Satu file yang dipilih, dengan object URL untuk pratinjau lokal. */
 type Picked = { file: File; preview: string; width: number | null; height: number | null };
 
@@ -108,68 +113,137 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
     setPicked(next);
   }
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  /**
+   * Kirim satu file ke server dan tunggu hasilnya.
+   *
+   * `onProgress` melapor byte yang sudah terkirim pada request ini, supaya
+   * progress bar bisa dihitung terhadap total seluruh file.
+   */
+  function uploadFile(
+    item: Picked,
+    altText: string,
+    onProgress: (loaded: number) => void,
+  ): Promise<FileOutcome> {
+    return new Promise((resolve) => {
+      const body = new FormData();
+      body.append("file", item.file);
+      if (folder) body.append("folder", folder);
+      if (altText) body.append("alt", altText);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/admin/gallery");
+
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) onProgress(e.loaded);
+      });
+
+      xhr.addEventListener("load", () => {
+        let payload: { saved?: Uploaded[]; failures?: Failure[]; error?: string } = {};
+        try {
+          payload = JSON.parse(xhr.responseText);
+        } catch {
+          // Body bukan JSON: biasanya halaman error dari proxy di depan Next.
+          payload = {};
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300 && payload.saved?.length) {
+          resolve({ ok: true, saved: payload.saved });
+          return;
+        }
+
+        resolve({
+          ok: false,
+          error: describeFailure(xhr.status, payload),
+          fatal: isFatalStatus(xhr.status),
+        });
+      });
+
+      xhr.addEventListener("error", () => {
+        resolve({ ok: false, error: "Koneksi terputus saat upload.", fatal: true });
+      });
+
+      xhr.addEventListener("abort", () => {
+        resolve({ ok: false, error: "Upload dibatalkan.", fatal: true });
+      });
+
+      xhr.send(body);
+    });
+  }
+
+  /**
+   * Unggah semua file yang dipilih, satu file per request.
+   *
+   * Satu file per request (bukan semua file sekaligus) karena ada lapisan
+   * di depan Next — proxy/nginx di VPS — yang menolak body besar dengan 413
+   * sebelum request sampai ke aplikasi. Memecah upload jadi request kecil
+   * membuat banyak foto besar tetap bisa masuk, dan membuat status 413
+   * menunjuk ke file yang benar-benar terlalu besar.
+   */
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (picked.length === 0) {
       setMessage({ kind: "error", text: "Pilih minimal satu foto dulu." });
       return;
     }
 
-    const body = new FormData();
-    for (const item of picked) body.append("file", item.file);
-    if (folder) body.append("folder", folder);
-    if (alt.trim()) body.append("alt", alt.trim());
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/admin/gallery");
-
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) setPercent(Math.round((e.loaded / e.total) * 100));
-    });
-
-    xhr.addEventListener("load", () => {
-      let payload: { saved?: Uploaded[]; failures?: Failure[]; error?: string } = {};
-      try {
-        payload = JSON.parse(xhr.responseText);
-      } catch {
-        // HTML error page (mis. 500) tidak bisa diparse sebagai JSON —
-        // sertakan status supaya penyebabnya bisa dilacak dari pesan.
-        payload = { error: `Respons server tidak terbaca (HTTP ${xhr.status}).` };
-      }
-
-      if (payload.saved?.length) {
-        const parts = [`${payload.saved.length} foto diunggah`];
-        if (payload.failures?.length) {
-          parts.push(`${payload.failures.length} gagal: ${payload.failures[0].error}`);
-        }
-        setMessage({
-          kind: payload.failures?.length ? "error" : "ok",
-          text: `${parts.join(". ")}.`,
-        });
-        setAlt("");
-        clearPicked();
-        router.refresh();
-        setBusy(false);
-        setPercent(null);
-        return;
-      }
-
-      setMessage({
-        kind: "error",
-        text: payload.error ?? `Upload gagal (HTTP ${xhr.status}).`,
-      });
-      reset();
-    });
-
-    xhr.addEventListener("error", () => {
-      setMessage({ kind: "error", text: "Koneksi terputus saat upload." });
-      reset();
-    });
-
     setBusy(true);
     setMessage(null);
     setPercent(0);
-    xhr.send(body);
+
+    const items = picked;
+    const totalBytes = items.reduce((sum, item) => sum + item.file.size, 0) || 1;
+    let doneBytes = 0;
+    let aborted = false;
+    const saved: Uploaded[] = [];
+    const failures: Failure[] = [];
+
+    for (const item of items) {
+      const outcome = await uploadFile(item, alt.trim(), (loaded) => {
+        setPercent(Math.round(((doneBytes + loaded) / totalBytes) * 100));
+      });
+      doneBytes += item.file.size;
+
+      if (outcome.ok) {
+        saved.push(...outcome.saved);
+      } else {
+        failures.push({ name: item.file.name, error: outcome.error });
+        // Sesi habis atau server error: sisa file tidak akan berhasil juga,
+        // jadi berhenti daripada menumpuk request yang pasti gagal.
+        if (outcome.fatal) {
+          aborted = true;
+          break;
+        }
+      }
+      setPercent(Math.round((doneBytes / totalBytes) * 100));
+    }
+
+    reset();
+
+    if (saved.length === 0) {
+      setMessage({
+        kind: "error",
+        text: failures[0]?.error ?? "Tidak ada file yang berhasil diunggah.",
+      });
+      return;
+    }
+
+    const parts = [`${saved.length} foto diunggah`];
+    if (failures.length) {
+      const detail = failures
+        .slice(0, 3)
+        .map((f) => `${f.name} (${f.error})`)
+        .join("; ");
+      parts.push(`${failures.length} gagal: ${detail}`);
+    }
+    if (aborted) parts.push("upload dihentikan");
+
+    setMessage({
+      kind: failures.length ? "error" : "ok",
+      text: `${parts.join(". ")}.`,
+    });
+    setAlt("");
+    clearPicked();
+    router.refresh();
   }
 
   const totalBytes = picked.reduce((sum, item) => sum + item.file.size, 0);
@@ -287,7 +361,8 @@ export function GalleryUploader({ folders }: { folders: string[] }) {
           {busy ? "Mengunggah…" : `Unggah ${picked.length > 0 ? `${picked.length} foto` : ""}`}
         </button>
         <p className="admin-hint">
-          Otomatis diperkecil dan dikonversi ke WebP. SVG ditolak karena bisa jadi celah XSS.
+          Otomatis diperkecil dan dikonversi ke WebP. Maks 25 MB per file, dikirim satu per satu
+          supaya file besar tidak ditolak proxy. SVG ditolak karena bisa jadi celah XSS.
         </p>
       </div>
 
@@ -304,4 +379,35 @@ function kb(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+/**
+ * Pesan error untuk satu request upload yang gagal.
+ *
+ * 413 perlu dibedakan: dari kode kita sendiri respons 413 selalu JSON
+ * (limit total di route), sedangkan 413 tanpa body JSON datang dari proxy
+ * di depan Next (nginx di VPS) yang menolak body terlalu besar.
+ */
+function describeFailure(
+  status: number,
+  payload: { error?: string; failures?: Failure[] },
+): string {
+  if (payload.error) return payload.error;
+  if (payload.failures?.length) return payload.failures[0].error;
+  if (status === 413) {
+    return "File ditolak: ukuran file melebihi batas body di proxy/server (HTTP 413). Naikkan client_max_body_size di nginx atau pakai file yang lebih kecil.";
+  }
+  if (status === 401) return "Sesi sudah habis. Muat ulang halaman lalu login lagi.";
+  if (status === 403) return "Akses ditolak.";
+  if (status === 0) return "Server tidak merespons.";
+  return `Upload gagal (HTTP ${status}).`;
+}
+
+/**
+ * Status yang membuat sisa file tidak berguna: sesi habis, akses
+ * ditolak, atau server error. 413 TIDAK termasuk — itu hanya soal ukuran
+ * file itu sendiri, file lain masih mungkin muat.
+ */
+function isFatalStatus(status: number): boolean {
+  return status === 0 || status === 401 || status === 403 || status >= 500;
 }
