@@ -713,6 +713,31 @@
   }
 }
 
+/* URL publik aset di halaman sunting (lihat asset-editor.tsx). */
+.admin-url {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.admin-url__input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--hb-border);
+  border-radius: 10px;
+  background: var(--hb-bg);
+  color: var(--hb-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.admin-url__link {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
 /* Skeleton grid selama pindah halaman galeri (lihat gallery-nav.tsx). */
 .admin-media-skeleton {
   border: 1px solid var(--hb-border);

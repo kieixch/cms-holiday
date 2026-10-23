@@ -42,10 +42,13 @@ type Handle = "move" | "pan" | "scroll-x" | "scroll-y" | "nw" | "ne" | "sw" | "s
 
 export function AssetEditor({
   asset,
+  publicUrl,
   actions,
   cropEditable,
 }: {
   asset: EditorAsset;
+  /** URL publik absolut; path relatif sudah diselesaikan di server. */
+  publicUrl: string;
   actions: EditorActions;
   /** False untuk URL impor lama yang filenya tidak ada di storage kita. */
   cropEditable: boolean;
@@ -53,6 +56,7 @@ export function AssetEditor({
   return (
     <div className="admin-editor">
       <div className="admin-editor__side">
+        <UrlCard url={publicUrl} />
         <MetaForm
           asset={asset}
           action={actions.meta}
@@ -70,6 +74,72 @@ export function AssetEditor({
       </div>
 
       {cropEditable ? <CropEditor asset={asset} /> : null}
+    </div>
+  );
+}
+
+/**
+ * URL publik aset + tombol salin.
+ *
+ * Dipisah dari form karena URL tidak bisa diubah: nama file boleh berganti,
+ * alamat file di storage tetap sama.
+ */
+function UrlCard({ url }: { url: string }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      // Clipboard API butuh HTTPS/localhost. Kalau ditolak, pilih teksnya
+      // supaya admin bisa menyalin manual dengan Ctrl+C.
+      const input = inputRef.current;
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+  }
+
+  return (
+    <div className="admin-card">
+      <h2>URL gambar</h2>
+      <p className="admin-hint">
+        Alamat publik file ini. Bisa dipakai di konten, email, atau halaman lain — mengubah
+        nama file tidak mengubah URL.
+      </p>
+
+      <div className="admin-url">
+        <input
+          ref={inputRef}
+          className="admin-url__input"
+          value={url}
+          readOnly
+          onFocus={(event) => event.currentTarget.select()}
+          aria-label="URL gambar"
+        />
+        <button type="button" className="admin-btn admin-btn--small" onClick={copy}>
+          {copied ? "Tersalin" : "Salin"}
+        </button>
+      </div>
+
+      <p className="admin-url__link">
+        <a href={url} target="_blank" rel="noreferrer">
+          Buka gambar di tab baru ↗
+        </a>
+      </p>
+
+      <span className="admin-status" role="status" aria-live="polite">
+        {copied ? "URL gambar disalin." : ""}
+      </span>
     </div>
   );
 }

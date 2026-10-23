@@ -7,6 +7,7 @@ import { findImageUsage } from "@/lib/admin/gallery-usage";
 import { requireSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { managedKeyFromUrl } from "@/lib/image";
+import { absoluteMedia } from "@/lib/seo";
 
 import {
   deleteAssetAndRedirectAction,
@@ -116,6 +117,7 @@ export default async function AssetPage({
           folder: asset.folder,
         }}
         actions={{ meta: updateAssetMetaAction, rename: renameAssetAction }}
+        publicUrl={absoluteMedia(asset.url) ?? asset.url}
         cropEditable={Boolean(storageKey)}
       />
 

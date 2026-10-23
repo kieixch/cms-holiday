@@ -342,6 +342,11 @@ async function main() {
     check("form nama file dirender", html.includes('name="filename"'), "");
     check("editor crop dirender untuk file milik storage", html.includes("admin-crop__box"), "");
     check("penanda hasil suntingan tersedia", html.includes("admin-crop__angle"), "");
+    check(
+      "URL gambar absolut ditampilkan",
+      html.includes("admin-url__input") && html.includes(assetUrl),
+      "",
+    );
 
     const missing = await fetch(`${BASE}/adm-cms-hb/gallery/tidak-ada`, {
       headers: auth,
