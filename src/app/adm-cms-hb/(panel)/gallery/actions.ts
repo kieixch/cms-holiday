@@ -133,33 +133,31 @@ export async function renameAssetAction(formData: FormData): Promise<void> {
   redirect(`/adm-cms-hb/gallery/${parsed.data}?tersimpan=nama`);
 }
 
+type DeleteOutcome =
+  | { ok: true; name: string }
+  | { ok: false; name: string; reason: string };
+
 /**
- * Hapus aset galeri.
+ * Inti penghapusan satu aset, dipakai hapus tunggal maupun hapus massal.
  *
  * Urutannya dibalik dari biasanya: cek pakai → hapus baris DB → hapus objek.
  * Kalau objek gagal dihapus, file yatimnya tidak berbahaya (tak terpakai lagi),
  * sedangkan kalau DB dihapus dulu lalu proses mati, kita kehilangan jejaknya.
  */
-export async function deleteAssetAction(
-  _prev: GalleryState,
-  formData: FormData,
-): Promise<GalleryState> {
-  await requireAdmin();
-
-  const parsed = id.safeParse(formData.get("id"));
-  if (!parsed.success) return { error: "ID gambar tidak valid." };
-
+async function deleteAssetById(assetId: string): Promise<DeleteOutcome> {
   const asset = await prisma.mediaAsset.findUnique({
-    where: { id: parsed.data },
+    where: { id: assetId },
     include: { _count: { select: { derivations: true } } },
   });
-  if (!asset) return { error: "Gambar sudah tidak ada." };
+  if (!asset) return { ok: false, name: "Gambar", reason: "Gambar sudah tidak ada." };
 
   // Aset yang punya turunannya dipakai sebagai asal-usul. Hapusinya berarti
   // hasil suntingan kehilangan jejaknya, jadi turunannya dibersihkan dulu.
   if (asset._count.derivations > 0) {
     return {
-      error:
+      ok: false,
+      name: asset.filename,
+      reason:
         `Gambar ini jadi asal-usul ${asset._count.derivations} hasil suntingan. ` +
         `Hapus hasil suntingannya dulu supaya jejaknya tidak putus.`,
     };
@@ -168,7 +166,9 @@ export async function deleteAssetAction(
   const usage = await findImageUsage(asset.url);
   if (usage.count > 0) {
     return {
-      error:
+      ok: false,
+      name: asset.filename,
+      reason:
         `Gambar ini masih dipakai di ${usage.count} tempat, jadi tidak dihapus: ` +
         usage.places.map((p) => p.where).join(", ") +
         `. Lepas dulu dari sana, baru hapus di sini.`,
@@ -189,25 +189,105 @@ export async function deleteAssetAction(
     }
   }
 
+  return { ok: true, name: asset.filename };
+}
+
+/** Hapus aset galeri. */
+export async function deleteAssetAction(
+  _prev: GalleryState,
+  formData: FormData,
+): Promise<GalleryState> {
+  await requireAdmin();
+
+  const parsed = id.safeParse(formData.get("id"));
+  if (!parsed.success) return { error: "ID gambar tidak valid." };
+
+  const result = await deleteAssetById(parsed.data);
+  if (!result.ok) return { error: result.reason };
+
   await revalidatePublic();
   return { ok: "Gambar dihapus." };
 }
 
 /**
- * Wrapper untuk `<form action={...}>` di grid galeri.
- *
- * Pesan kegagalan dibawa lewat query param, bukan redirect biasa. Kalau hapus
- * ditolak dan kita tetap `redirect()` tanpa penerusan pesan, admin melihat
- * daftar galeri yang berubah tidak jelas dan tidak pernah tahu alasannya —
- * termasuk kasus aset yang masih jadi asal-usul hasil suntingan.
+ * URL kembali setelah redirect. Dibatasi ke halaman galeri supaya parameter
+ * `back` yang dimanipulasi tidak bisa mengalihkan admin ke domain lain.
  */
+function backPath(value: FormDataEntryValue | null): string {
+  const raw = typeof value === "string" ? value : "";
+  return /^\/adm-cms-hb\/gallery(\?[^\s#]*)?$/.test(raw) ? raw : "/adm-cms-hb/gallery";
+}
+
+/** Tempel pesan ok/galat ke URL daftar, menghormati query yang sudah ada. */
+function withMessage(base: string, key: "ok" | "galat", message: string): string {
+  const separator = base.includes("?") ? "&" : "?";
+  return `${base}${separator}${key}=${encodeURIComponent(message)}`;
+}
+
+/** Wrapper untuk `<form action={...}>` tombol hapus per kartu. */
 export async function deleteAssetAndRedirectAction(formData: FormData): Promise<void> {
+  const back = backPath(formData.get("back"));
   const result = await deleteAssetAction({}, formData);
-  if (result.error) {
-    redirect(`/adm-cms-hb/gallery?galat=${encodeURIComponent(result.error)}`);
+  if (result.error) redirect(withMessage(back, "galat", result.error));
+  if (result.ok) redirect(withMessage(back, "ok", result.ok));
+  redirect(back);
+}
+
+/**
+ * Hapus banyak aset sekaligus dari checkbox di grid.
+ *
+ * Setiap aset tetap melewati aturan yang sama dengan hapus tunggal (asal-usul
+ * dan pemakaian), jadi sebagian bisa gagal sementara sisanya terhapus. Hasil
+ * suntingan diproses lebih dulu supaya memilih asal + turunannya sekaligus
+ * tidak diblokir aturan "asal-usul".
+ */
+export async function deleteAssetsAction(formData: FormData): Promise<void> {
+  // Auth duluan — jangan sampai input apa pun diproses sebelum cek sesi.
+  await requireAdmin();
+
+  const back = backPath(formData.get("back"));
+  const raw = formData.getAll("ids").map((value) => String(value));
+  const parsed = z.array(id).min(1).max(200).safeParse(raw);
+  if (!parsed.success) {
+    redirect(withMessage(back, "galat", "Pilih minimal satu gambar."));
   }
-  if (result.ok) {
-    redirect(`/adm-cms-hb/gallery?ok=${encodeURIComponent(result.ok)}`);
+
+  const unique = [...new Set(parsed.data)];
+  const rows = await prisma.mediaAsset.findMany({
+    where: { id: { in: unique } },
+    select: { id: true, derivedFromId: true },
+  });
+  // `derivedFromId` terisi = hasil suntingan → didahulukan.
+  const order = rows
+    .sort((a, b) => Number(b.derivedFromId !== null) - Number(a.derivedFromId !== null))
+    .map((row) => row.id);
+
+  let deleted = 0;
+  const failures: string[] = [];
+
+  for (const assetId of order) {
+    const result = await deleteAssetById(assetId);
+    if (result.ok) deleted += 1;
+    else failures.push(`${result.name}: ${result.reason}`);
   }
-  redirect("/adm-cms-hb/gallery");
+
+  if (deleted > 0) await revalidatePublic();
+
+  if (deleted === 0) {
+    redirect(withMessage(back, "galat", failures[0] ?? "Tidak ada gambar yang dihapus."));
+  }
+
+  if (failures.length > 0) {
+    const shown = failures.slice(0, 3).join("; ");
+    const rest = failures.length > 3 ? `; dan ${failures.length - 3} lainnya` : "";
+    redirect(
+      withMessage(
+        back,
+        "galat",
+        `${deleted} gambar dihapus, ${failures.length} gagal: ${shown}${rest}`,
+      ),
+    );
+  }
+
+  redirect(withMessage(back, "ok", `${deleted} gambar dihapus.`));
 }

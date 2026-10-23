@@ -8,12 +8,9 @@ import { storageConfigured } from "@/lib/storage";
 
 import { GalleryGrid } from "./gallery-grid";
 import { GalleryUploader } from "./gallery-uploader";
-import { clampPer, DEFAULT_PER } from "./pagination";
+import { clampPer, DEFAULT_PER, pageWindow } from "./pagination";
 
 export const metadata: Metadata = { title: "Galeri — Admin" };
-
-/** Nomor halaman yang ditampilkan penuh sebelum sisi ekstrem diringkas. */
-const PAGE_WINDOW = 7;
 
 export default async function GalleryPage({
   searchParams,
@@ -57,18 +54,23 @@ export default async function GalleryPage({
   const totalPages = Math.max(1, Math.ceil(matched / per));
   const page = Math.min(requestedPage, totalPages);
 
-  const pageHref = (next: number) => {
+  const galleryHref = (next: number, extra?: { ok?: string; galat?: string }) => {
     const params = new URLSearchParams();
     if (term) params.set("q", term);
     if (per !== DEFAULT_PER) params.set("per", String(per));
     if (next > 1) params.set("page", String(next));
+    if (extra?.ok) params.set("ok", extra.ok);
+    if (extra?.galat) params.set("galat", extra.galat);
     const qs = params.toString();
     return `/adm-cms-hb/gallery${qs ? `?${qs}` : ""}`;
   };
 
+  const pageHref = (next: number) => galleryHref(next);
+
   // Aset bisa terhapus / pencarian menyempit sehingga halaman di URL melewati
   // halaman terakhir. Alihkan ke halaman yang valid supaya URL dan isi cocok.
-  if (requestedPage > page) redirect(pageHref(page));
+  // Pesan ok/galat ikut dibawa supaya notifikasi hapus tidak hilang.
+  if (requestedPage > page) redirect(galleryHref(page, { ok, galat }));
 
   const assets = await prisma.mediaAsset.findMany({
     where,
@@ -122,7 +124,7 @@ export default async function GalleryPage({
             : "Belum ada gambar. Unggah foto pertama di atas."}
         </p>
       ) : (
-        <GalleryGrid assets={assets} per={per} term={term} />
+        <GalleryGrid assets={assets} per={per} term={term} backTo={pageHref(page)} />
       )}
 
       {totalPages > 1 && (
@@ -139,7 +141,7 @@ export default async function GalleryPage({
 
           {pageWindow(page, totalPages).map((item, index) =>
             item === "gap" ? (
-              <span className="admin-pagination__gap" key={`gap-${index}`}>
+              <span className="admin-pagination__gap" key={`gap-${index}`} aria-hidden="true">
                 …
               </span>
             ) : (
@@ -164,6 +166,27 @@ export default async function GalleryPage({
             </span>
           )}
 
+          {/* Form GET biasa: loncat halaman tetap jalan tanpa JavaScript. */}
+          <form className="admin-pagination__jump" method="get">
+            {term ? <input type="hidden" name="q" value={term} /> : null}
+            {per !== DEFAULT_PER ? <input type="hidden" name="per" value={per} /> : null}
+            <label className="admin-pagination__jump-label">
+              Ke halaman
+              <input
+                type="number"
+                name="page"
+                min={1}
+                max={totalPages}
+                defaultValue={page}
+                required
+                aria-label="Nomor halaman tujuan"
+              />
+            </label>
+            <button type="submit" className="admin-pagination__step">
+              Lompat
+            </button>
+          </form>
+
           <span className="admin-pagination__info">
             {matched} foto · halaman {page} dari {totalPages}
           </span>
@@ -173,24 +196,3 @@ export default async function GalleryPage({
   );
 }
 
-/**
- * Deret nomor halaman: selalu tampilkan halaman pertama/terakhir, dan di
- * antaranya cukup halaman di sekitar halaman aktif supaya deretnya tidak
- * memanjang saat aset sudah ratusan.
- */
-function pageWindow(current: number, total: number): (number | "gap")[] {
-  if (total <= PAGE_WINDOW) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
-  const items: (number | "gap")[] = [1];
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-
-  if (start > 2) items.push("gap");
-  for (let p = start; p <= end; p += 1) items.push(p);
-  if (end < total - 1) items.push("gap");
-  items.push(total);
-
-  return items;
-}
