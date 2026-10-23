@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import { imageUnoptimized } from "@/lib/media";
+
 /**
  * Ringkas data kartu halaman HTML mandiri yang tampil di halaman publik.
  * Sumbernya `prisma.htmlPage` (panel admin → `/adm-cms-hb/halaman`).
@@ -33,14 +35,15 @@ export function PageCardGrid({ pages }: { pages: PageCardData[] }) {
         <a key={page.slug} className="hbgl-pg-card" href={`/halaman/${page.slug}`}>
           {page.cardImage ? (
             <span className="hbgl-pg-card__media">
-              {/* URL gambar bisa menunjuk host mana pun yang ditempel admin,
-                  jadi optimizer Next dilewati — sama seperti feed Instagram. */}
+              {/* Host luar yang tidak terdaftar tetap dilewati optimizer;
+                  media R2 dioptimalkan agar tidak bergantung pada akses
+                  browser ke `r2.dev`. */}
               <Image
                 src={page.cardImage}
                 alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                unoptimized
+                unoptimized={imageUnoptimized(page.cardImage)}
               />
             </span>
           ) : null}

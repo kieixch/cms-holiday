@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { imageUnoptimized } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -191,8 +193,15 @@ export default async function AdminDashboardPage() {
               recentAssets.slice(0, 4).map((asset) => (
                 // Thumbnail kecil dari aset terbaru — pengganti "bar" supaya
                 // kartu ini tetap visual, bukan sekadar angka.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={asset.id} src={asset.url} alt="" loading="lazy" />
+                <Image
+                  key={asset.id}
+                  src={asset.url}
+                  alt=""
+                  width={160}
+                  height={80}
+                  loading="lazy"
+                  unoptimized={imageUnoptimized(asset.url)}
+                />
               ))
             ) : (
               <span className="admin-stat-strip__empty">Belum ada aset</span>
@@ -282,8 +291,14 @@ export default async function AdminDashboardPage() {
             <div className="admin-thumbrow">
               {recentAssets.map((asset) => (
                 <Link className="admin-thumbrow__item" href={`/adm-cms-hb/gallery/${asset.id}`} key={asset.id}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={asset.url} alt={asset.alt} loading="lazy" />
+                  <Image
+                    src={asset.url}
+                    alt={asset.alt}
+                    width={240}
+                    height={180}
+                    loading="lazy"
+                    unoptimized={imageUnoptimized(asset.url)}
+                  />
                 </Link>
               ))}
             </div>

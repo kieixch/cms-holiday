@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import { imageUnoptimized } from "@/lib/media";
+
 export type TypeCardData = {
   slug: string;
   icon: string;
@@ -30,11 +32,10 @@ export function TypeCardGrid({ items }: { items: (TypeCardData & { name: string 
               alt={t.imageAlt ?? ""}
               width={480}
               height={336}
-              // `unoptimized` karena URL-nya bisa menunjuk ke host luar
-              // (konten impor lama) atau bucket R2 yang domainnya belum
-              // didaftarkan di `images.remotePatterns`. Optimizer Next hanya
-              // boleh dipakai untuk origin yang dikonfigurasi.
-              unoptimized
+              // Host luar yang tidak terdaftar tetap dirender langsung; media
+              // R2 lewat optimizer supaya tetap tampil walau `r2.dev` diblokir
+              // di jaringan pengunjung.
+              unoptimized={imageUnoptimized(t.image)}
             />
           ) : (
             <div className="type-icon">{t.icon}</div>

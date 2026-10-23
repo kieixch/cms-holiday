@@ -11,6 +11,7 @@ import {
   SaveProgress,
   useSaveProgress,
 } from "@/components/admin/save-progress";
+import { imageUnoptimized } from "@/lib/media";
 
 export type EditorAsset = {
   id: string;
@@ -715,7 +716,7 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
             alt={asset.alt || asset.filename}
             width={naturalW}
             height={naturalH}
-            unoptimized
+            unoptimized={imageUnoptimized(asset.url)}
             style={{
               position: "absolute",
               left: "50%",

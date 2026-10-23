@@ -21,6 +21,9 @@ const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
   // Sumber gambar legacy WordPress, dipakai selama masa transisi seed.
   // Hapus setelah semua media dipindahkan ke storage sendiri.
   { protocol: "https", hostname: "holidaybanyuwangi.com", pathname: "/wp-content/uploads/**" },
+  // Bucket R2 publik. `r2.dev` bisa berubah saat bucket dibuat ulang, jadi
+  // seluruh subdomain diizinkan; tetap dibatasi ke HTTPS dan path apa pun.
+  { protocol: "https", hostname: "**.r2.dev", pathname: "/**" },
 ];
 
 if (storageHost) {
@@ -115,6 +118,13 @@ const adminHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  /**
+   * Hostname storage publik ikut dikirim ke client supaya `isOptimizableImage`
+   * (src/lib/media.ts) mengenali custom domain R2, bukan hanya `*.r2.dev`.
+   */
+  env: {
+    NEXT_PUBLIC_MEDIA_HOST: storageHost ?? "",
+  },
   async headers() {
     // Entry spesifik diletakkan setelah entry umum: ketika beberapa entry
     // cocok untuk satu path, nilai header dari entry BELAKANGAN yang menang —

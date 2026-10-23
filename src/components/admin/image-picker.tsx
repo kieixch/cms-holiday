@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { imageUnoptimized } from "@/lib/media";
+
 /** Satu aset yang sudah tersimpan, sesuai balasan `GET /api/admin/gallery`. */
 export type PickerAsset = {
   id: string;
@@ -193,10 +195,17 @@ export function ImagePicker({
         <ul className="admin-picker__list">
           {selected.map((url, index) => (
             <li key={url} className="admin-picker__item">
-              {/* URL bisa berasal dari impor lama di host luar, jadi `next/image`
-                  tidak bisa dipakai: optimizer hanya boleh untuk origin sendiri. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="admin-picker__thumb" />
+              {/* Host luar tetap dirender langsung; media R2 lewat optimizer
+                  supaya pratinjau tetap tampil walau `r2.dev` tidak bisa
+                  dibuka dari jaringan admin. */}
+              <Image
+                src={url}
+                alt=""
+                width={68}
+                height={52}
+                className="admin-picker__thumb"
+                unoptimized={imageUnoptimized(url)}
+              />
               <div className="admin-picker__meta">
                 <code className="admin-picker__url" title={url}>
                   {url}
