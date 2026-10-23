@@ -713,6 +713,84 @@
   }
 }
 
+/* Skeleton grid selama pindah halaman galeri (lihat gallery-nav.tsx). */
+.admin-media-skeleton {
+  border: 1px solid var(--hb-border);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-media-skeleton__thumb {
+  aspect-ratio: 4 / 3;
+}
+
+.admin-media-skeleton__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+
+.admin-media-skeleton__line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.admin-media-skeleton__line--short {
+  width: 62%;
+}
+
+.admin-media-skeleton__line--tiny {
+  width: 38%;
+}
+
+.admin-media-skeleton__action {
+  height: 30px;
+  width: 96px;
+  margin-top: 4px;
+  border-radius: 10px;
+}
+
+.admin-media-skeleton__thumb,
+.admin-media-skeleton__line,
+.admin-media-skeleton__action {
+  background: linear-gradient(90deg, var(--hb-sage) 25%, #f2f6f3 37%, var(--hb-sage) 63%);
+  background-size: 400% 100%;
+  animation: admin-skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes admin-skeleton-shimmer {
+  from {
+    background-position: 100% 50%;
+  }
+
+  to {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-media-skeleton__thumb,
+  .admin-media-skeleton__line,
+  .admin-media-skeleton__action {
+    animation: none;
+  }
+}
+
+/* Status navigasi untuk pembaca layar; tidak terlihat di layar. */
+.admin-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (max-width: 900px) {
   .admin-shell {
     grid-template-columns: 1fr;

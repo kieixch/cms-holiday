@@ -7,8 +7,10 @@ import { prisma } from "@/lib/db";
 import { storageConfigured } from "@/lib/storage";
 
 import { GalleryGrid } from "./gallery-grid";
+import { GalleryNavProvider, GallerySkeletonGate } from "./gallery-nav";
+import { GalleryPager } from "./gallery-pager";
 import { GalleryUploader } from "./gallery-uploader";
-import { clampPer, DEFAULT_PER, pageWindow } from "./pagination";
+import { clampPer, DEFAULT_PER, galleryHref } from "./pagination";
 
 export const metadata: Metadata = { title: "Galeri — Admin" };
 
@@ -54,23 +56,12 @@ export default async function GalleryPage({
   const totalPages = Math.max(1, Math.ceil(matched / per));
   const page = Math.min(requestedPage, totalPages);
 
-  const galleryHref = (next: number, extra?: { ok?: string; galat?: string }) => {
-    const params = new URLSearchParams();
-    if (term) params.set("q", term);
-    if (per !== DEFAULT_PER) params.set("per", String(per));
-    if (next > 1) params.set("page", String(next));
-    if (extra?.ok) params.set("ok", extra.ok);
-    if (extra?.galat) params.set("galat", extra.galat);
-    const qs = params.toString();
-    return `/adm-cms-hb/gallery${qs ? `?${qs}` : ""}`;
-  };
-
-  const pageHref = (next: number) => galleryHref(next);
+  const pageHref = (next: number) => galleryHref({ page: next, per, term });
 
   // Aset bisa terhapus / pencarian menyempit sehingga halaman di URL melewati
   // halaman terakhir. Alihkan ke halaman yang valid supaya URL dan isi cocok.
   // Pesan ok/galat ikut dibawa supaya notifikasi hapus tidak hilang.
-  if (requestedPage > page) redirect(galleryHref(page, { ok, galat }));
+  if (requestedPage > page) redirect(galleryHref({ page, per, term, ok, galat }));
 
   const assets = await prisma.mediaAsset.findMany({
     where,
@@ -117,81 +108,29 @@ export default async function GalleryPage({
         )}
       </form>
 
-      {assets.length === 0 ? (
-        <p className="admin-empty">
-          {term
-            ? `Tidak ada gambar yang cocok dengan "${term}".`
-            : "Belum ada gambar. Unggah foto pertama di atas."}
-        </p>
-      ) : (
-        <GalleryGrid assets={assets} per={per} term={term} backTo={pageHref(page)} />
-      )}
+      <GalleryNavProvider>
+        {assets.length === 0 ? (
+          <p className="admin-empty">
+            {term
+              ? `Tidak ada gambar yang cocok dengan "${term}".`
+              : "Belum ada gambar. Unggah foto pertama di atas."}
+          </p>
+        ) : (
+          <GallerySkeletonGate count={per}>
+            <GalleryGrid assets={assets} per={per} term={term} backTo={pageHref(page)} />
+          </GallerySkeletonGate>
+        )}
 
-      {totalPages > 1 && (
-        <nav className="admin-pagination" aria-label="Paginasi galeri">
-          {page > 1 ? (
-            <Link className="admin-pagination__step" href={pageHref(page - 1)} rel="prev">
-              ‹ Sebelumnya
-            </Link>
-          ) : (
-            <span className="admin-pagination__step" aria-disabled="true">
-              ‹ Sebelumnya
-            </span>
-          )}
-
-          {pageWindow(page, totalPages).map((item, index) =>
-            item === "gap" ? (
-              <span className="admin-pagination__gap" key={`gap-${index}`} aria-hidden="true">
-                …
-              </span>
-            ) : (
-              <Link
-                key={item}
-                className="admin-pagination__page"
-                href={pageHref(item)}
-                aria-current={item === page ? "page" : undefined}
-              >
-                {item}
-              </Link>
-            ),
-          )}
-
-          {page < totalPages ? (
-            <Link className="admin-pagination__step" href={pageHref(page + 1)} rel="next">
-              Berikutnya ›
-            </Link>
-          ) : (
-            <span className="admin-pagination__step" aria-disabled="true">
-              Berikutnya ›
-            </span>
-          )}
-
-          {/* Form GET biasa: loncat halaman tetap jalan tanpa JavaScript. */}
-          <form className="admin-pagination__jump" method="get">
-            {term ? <input type="hidden" name="q" value={term} /> : null}
-            {per !== DEFAULT_PER ? <input type="hidden" name="per" value={per} /> : null}
-            <label className="admin-pagination__jump-label">
-              Ke halaman
-              <input
-                type="number"
-                name="page"
-                min={1}
-                max={totalPages}
-                defaultValue={page}
-                required
-                aria-label="Nomor halaman tujuan"
-              />
-            </label>
-            <button type="submit" className="admin-pagination__step">
-              Lompat
-            </button>
-          </form>
-
-          <span className="admin-pagination__info">
-            {matched} foto · halaman {page} dari {totalPages}
-          </span>
-        </nav>
-      )}
+        {totalPages > 1 && (
+          <GalleryPager
+            page={page}
+            totalPages={totalPages}
+            matched={matched}
+            term={term}
+            per={per}
+          />
+        )}
+      </GalleryNavProvider>
     </>
   );
 }
