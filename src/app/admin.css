@@ -1769,6 +1769,88 @@
   color: var(--hb-ink);
 }
 
+/*
+ * Kartu progres simpan di editor.
+ *
+ * Fixed di bawah area konten (bukan tengah viewport) supaya tidak menutupi
+ * sidebar. `pointer-events: none` menjaga tombol di belakangnya tetap bisa
+ * diklik; angkanya perkiraan (lihat save-progress.tsx).
+ */
+.admin-save {
+  position: fixed;
+  left: calc(50vw + var(--admin-sidebar-w, 240px) / 2);
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 85;
+  width: min(320px, calc(100vw - 32px));
+  padding: 11px 14px 13px;
+  border: 1px solid var(--hb-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 40px -24px rgb(6 64 46 / 55%);
+  transform: translateX(-50%);
+  animation: admin-save-in 0.16s ease-out;
+  pointer-events: none;
+}
+
+.admin-save__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
+.admin-save__head strong {
+  color: var(--hb-forest);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-save__track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--hb-sage);
+}
+
+.admin-save__bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hb-forest);
+  transition: width 0.16s linear;
+}
+
+@keyframes admin-save-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-save {
+    left: 50vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-save {
+    animation: none;
+  }
+
+  .admin-save__bar {
+    transition: none;
+  }
+}
+
 .admin-media-upload__actions {
   display: flex;
   align-items: center;

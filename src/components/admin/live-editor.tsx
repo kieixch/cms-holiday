@@ -42,6 +42,7 @@ import type { FieldSection } from "@/lib/admin/sections";
 
 import { FormFields, type ErrorMap, type FormValues } from "./form-fields";
 import { HalamanCardPreview, HalamanDocPreview } from "./halaman-preview";
+import { SaveButton, SaveProgress, useSaveProgress } from "./save-progress";
 import type { FormState } from "./admin-form";
 
 /** Bentuk nilai form yang dikirim ke `<LiveEditor>`. */
@@ -130,6 +131,7 @@ export function LiveEditor({
 }: Props) {
   const [values, setValues] = useState<FormValues>(() => ({ ...initial }));
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
+  const savePercent = useSaveProgress(pending);
   const [open, setOpen] = useState<string[]>(() => [sections[0]?.id].filter(Boolean) as string[]);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [zoom, setZoom] = useState(1);
@@ -274,6 +276,8 @@ export function LiveEditor({
           ))
         : null}
 
+      <SaveProgress percent={savePercent} />
+
       <aside className="live-editor__panel" ref={panelRef}>
         <header className="admin-page-head">
           <div>
@@ -284,7 +288,7 @@ export function LiveEditor({
             ) : null}
             <h1>{title}</h1>
           </div>
-          <SubmitButton pending={pending} label={submitLabel} />
+          <SaveButton pending={pending} percent={savePercent} label={submitLabel} />
         </header>
 
         {state?.message ? (
@@ -330,7 +334,7 @@ export function LiveEditor({
         </div>
 
         <footer className="admin-form__footer">
-          <SubmitButton pending={pending} label={submitLabel} />
+          <SaveButton pending={pending} percent={savePercent} label={submitLabel} />
           {backHref ? (
             <Link className="admin-btn admin-btn--ghost" href={backHref}>
               Batal
@@ -674,14 +678,6 @@ function LiveAccordion({
         />
       </div>
     </section>
-  );
-}
-
-function SubmitButton({ pending, label }: { pending: boolean; label: string }) {
-  return (
-    <button className="admin-btn admin-btn--primary" type="submit" disabled={pending}>
-      {pending ? "Menyimpan…" : label}
-    </button>
   );
 }
 

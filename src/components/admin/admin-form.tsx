@@ -6,6 +6,7 @@ import { useActionState, useCallback, useMemo, useState } from "react";
 import type { FieldSection } from "@/lib/admin/sections";
 
 import { FormFields, type ErrorMap, type FormValues } from "./form-fields";
+import { SaveButton, SaveProgress, useSaveProgress } from "./save-progress";
 
 type Props = {
   /** Bagian bernomor yang dirender sebagai accordion. */
@@ -57,6 +58,7 @@ export function AdminForm({
 }: Props) {
   const [values, setValues] = useState<FormValues>(() => ({ ...initial }));
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
+  const savePercent = useSaveProgress(pending);
   const [open, setOpen] = useState<string[]>(() => (sections[0] ? [sections[0].id] : []));
 
   const errors = state?.errors ?? {};
@@ -95,6 +97,8 @@ export function AdminForm({
           ))
         : null}
 
+      <SaveProgress percent={savePercent} />
+
       <header className="admin-page-head">
         <div>
           {backHref ? (
@@ -104,7 +108,7 @@ export function AdminForm({
           ) : null}
           <h1>{title}</h1>
         </div>
-        <SubmitButton pending={pending} label={submitLabel} />
+        <SaveButton pending={pending} percent={savePercent} label={submitLabel} />
       </header>
 
       {state?.message ? (
@@ -164,7 +168,7 @@ export function AdminForm({
       </div>
 
       <footer className="admin-form__footer">
-        <SubmitButton pending={pending} label={submitLabel} />
+        <SaveButton pending={pending} percent={savePercent} label={submitLabel} />
         {backHref ? (
           <Link className="admin-btn admin-btn--ghost" href={backHref}>
             Batal
@@ -172,13 +176,5 @@ export function AdminForm({
         ) : null}
       </footer>
     </form>
-  );
-}
-
-function SubmitButton({ pending, label }: { pending: boolean; label: string }) {
-  return (
-    <button className="admin-btn admin-btn--primary" type="submit" disabled={pending}>
-      {pending ? "Menyimpan…" : label}
-    </button>
   );
 }

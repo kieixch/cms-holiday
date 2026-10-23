@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import {
+  ProgressSubmit,
+  SaveButton,
+  SaveProgress,
+  useSaveProgress,
+} from "@/components/admin/save-progress";
+
 export type EditorAsset = {
   id: string;
   filename: string;
@@ -205,7 +212,7 @@ function MetaForm({
       ) : null}
 
       <div className="admin-form__footer">
-        <button className="admin-btn admin-btn--primary">Simpan</button>
+        <ProgressSubmit label="Simpan" />
       </div>
     </form>
   );
@@ -268,6 +275,7 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
   );
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [busy, setBusy] = useState(false);
+  const savePercent = useSaveProgress(busy);
   const [note, setNote] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
   // Sisi gambar yang terlihat setelah diputar. Putar 90 dan 270 menukarnya.
@@ -795,13 +803,19 @@ function CropEditor({ asset }: { asset: EditorAsset }) {
       </p>
 
       <div className="admin-form__footer">
-        <button className="admin-btn admin-btn--primary" onClick={save} disabled={busy}>
-          {busy ? "Menyimpan…" : "Simpan hasil suntingan"}
-        </button>
+        <SaveButton
+          pending={busy}
+          percent={savePercent}
+          label="Simpan hasil suntingan"
+          type="button"
+          onClick={save}
+        />
         <Link className="admin-btn admin-btn--ghost" href="/adm-cms-hb/gallery">
           Kembali ke galeri
         </Link>
       </div>
+
+      <SaveProgress percent={savePercent} />
 
       {note ? (
         <p
