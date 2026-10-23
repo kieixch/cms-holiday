@@ -1925,6 +1925,12 @@
   list-style: none;
 }
 
+.admin-picker__count {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: var(--hb-ink-2);
+}
+
 .admin-picker__cell {
   position: relative;
   display: block;

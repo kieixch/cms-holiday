@@ -57,6 +57,7 @@ export function ImagePicker({
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
   const [assets, setAssets] = useState<PickerAsset[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -65,6 +66,12 @@ export function ImagePicker({
   /**
    * Ambil daftar saat dialog dibuka saja, dengan penundaan pencarian supaya
    * mengetik tidak memicu satu request per huruf.
+   *
+   * API mengirim 60 aset per halaman, jadi semua halaman diambil berurutan
+   * sampai `hasMore` habis. Tanpa ini picker hanya menampilkan 60 gambar
+   * pertama walaupun galeri berisi lebih banyak. Halaman yang sudah masuk
+   * langsung dirender supaya modal tidak kosong selama halaman berikutnya
+   * dimuat.
    */
   useEffect(() => {
     if (!open) return;
@@ -73,26 +80,53 @@ export function ImagePicker({
     const timer = setTimeout(async () => {
       setLoading(true);
       setLoadError(null);
+      setAssets([]);
+      setTotal(null);
+
       try {
-        const res = await fetch(`/api/admin/gallery?q=${encodeURIComponent(term)}`, {
-          signal: controller.signal,
-        });
-        if (res.status === 401) {
-          setLoadError("Sesi habis. Muat ulang halaman.");
-          return;
+        let page = 1;
+
+        while (!controller.signal.aborted) {
+          const res = await fetch(
+            `/api/admin/gallery?q=${encodeURIComponent(term)}&page=${page}`,
+            { signal: controller.signal },
+          );
+          if (res.status === 401) {
+            setLoadError("Sesi habis. Muat ulang halaman.");
+            return;
+          }
+          const payload = (await res.json()) as {
+            assets?: PickerAsset[];
+            total?: number;
+            hasMore?: boolean;
+            error?: string;
+          };
+          if (payload.error) {
+            setLoadError(payload.error);
+            return;
+          }
+
+          const batch = payload.assets ?? [];
+          setAssets((prev) => {
+            if (page === 1) return batch;
+            // Aset bisa berubah di antara dua request; dedupe per id supaya
+            // tidak ada sel ganda.
+            const known = new Set(prev.map((asset) => asset.id));
+            return [...prev, ...batch.filter((asset) => !known.has(asset.id))];
+          });
+          setTotal(payload.total ?? null);
+
+          if (!payload.hasMore || batch.length === 0) break;
+          page += 1;
         }
-        const payload = (await res.json()) as { assets?: PickerAsset[]; error?: string };
-        if (payload.error) {
-          setLoadError(payload.error);
-          return;
-        }
-        setAssets(payload.assets ?? []);
       } catch (e) {
         // Request dibatalkan karena kata kunci berikutnya sudah masuk.
         if (e instanceof DOMException && e.name === "AbortError") return;
         setLoadError("Gagal memuat daftar gambar.");
       } finally {
-        setLoading(false);
+        // Jangan sentuh state kalau effect ini sudah dibersihkan; request
+        // pengganti sudah menyalakan `loading` sendiri.
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 250);
 
@@ -239,7 +273,17 @@ export function ImagePicker({
               </button>
             </header>
 
-            {loading ? <p className="admin-empty admin-empty--tight">Memuat…</p> : null}
+            {total !== null ? (
+              <p className="admin-picker__count">
+                {assets.length < total
+                  ? `${assets.length} dari ${total} gambar…`
+                  : `${total} gambar`}
+              </p>
+            ) : null}
+
+            {loading && assets.length === 0 ? (
+              <p className="admin-empty admin-empty--tight">Memuat…</p>
+            ) : null}
             {loadError ? <p className="admin-alert admin-alert--error">{loadError}</p> : null}
 
             {!loading && !loadError && assets.length === 0 ? (
