@@ -43,16 +43,17 @@ const isDev = process.env.NODE_ENV !== "production";
  */
 const cspDirectives = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://*.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://*.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.google.co.id https://*.doubleclick.net",
   "media-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
+  "frame-src 'self' https://www.googletagmanager.com https://td.doubleclick.net https://www.google.com",
 ];
 
 const csp = cspDirectives.join("; ");
@@ -69,7 +70,7 @@ const csp = cspDirectives.join("; ");
  * SIAPA yang boleh diframe, bukan apa yang boleh dilakukan halaman admin;
  * `default-src`/`script-src`/dst. tetap utuh.
  */
-const adminCsp = [...cspDirectives, "frame-src 'self' data:"].join("; ");
+const adminCsp = [...cspDirectives.filter((d) => !d.startsWith("frame-src")), "frame-src 'self' data:"].join("; ");
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
