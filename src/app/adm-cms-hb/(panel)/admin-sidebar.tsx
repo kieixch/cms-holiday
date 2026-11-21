@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { LogoSvg } from "@/components/site/logo";
 import { logoutAction } from "../login/actions";
@@ -9,6 +10,97 @@ import { logoutAction } from "../login/actions";
 type Props = {
   user: { name: string; email: string };
 };
+
+type NavItem = { href: string; label: string; icon: ReactNode };
+
+function NavIcon({ children }: { children: ReactNode }) {
+  return (
+    <svg className="admin-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    href: "/adm-cms-hb",
+    label: "Ringkasan",
+    icon: (
+      <NavIcon>
+        <rect x="3" y="3" width="8" height="8" rx="2" />
+        <rect x="13" y="3" width="8" height="8" rx="2" />
+        <rect x="3" y="13" width="8" height="8" rx="2" />
+        <rect x="13" y="13" width="8" height="8" rx="2" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/adm-cms-hb/paket",
+    label: "Paket",
+    icon: (
+      <NavIcon>
+        <path d="M20 7l-8 4-8-4m16 0l-8-4-8 4m16 0v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/adm-cms-hb/kategori",
+    label: "Kategori",
+    icon: (
+      <NavIcon>
+        <path d="M4 6h16M4 12h16M4 18h10" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/adm-cms-hb/gallery",
+    label: "Galeri",
+    icon: (
+      <NavIcon>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <circle cx="8.5" cy="9.5" r="1.5" />
+        <path d="M21 15l-5-5L5 21" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/adm-cms-hb/halaman",
+    label: "Halaman Custom",
+    icon: (
+      <NavIcon>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/adm-cms-hb/sosmed",
+    label: "Sosmed",
+    icon: (
+      <NavIcon>
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/adm-cms-hb/pengaturan",
+    label: "Pengaturan",
+    icon: (
+      <NavIcon>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .3 1.7 1.7 0 0 0-.82 1.46V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-.67-1.31 1.7 1.7 0 0 0-1-.3 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.3-1 1.7 1.7 0 0 0-1.46-.82H2.75a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.31-.67 1.7 1.7 0 0 0 .3-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.3 1.7 1.7 0 0 0 .82-1.46V2.75a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 .67 1.31 1.7 1.7 0 0 0 1 .3 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .3 1 1.7 1.7 0 0 0 1.46.82h.09a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.31.67 1.7 1.7 0 0 0-.3 1z" />
+      </NavIcon>
+    ),
+  },
+];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/adm-cms-hb") return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 /**
  * Sidebar panel admin beserta tombol hamburger untuk layar sempit.
@@ -22,6 +114,7 @@ type Props = {
  * dari modulnya — pola yang sama dengan halaman login.
  */
 export function AdminSidebar({ user }: Props) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const close = useCallback(() => setOpen(false), []);
@@ -101,30 +194,21 @@ export function AdminSidebar({ user }: Props) {
         </div>
 
         <nav className="admin-nav">
-          <Link href="/adm-cms-hb" onClick={close}>
-            Ringkasan
-          </Link>
-          <Link href="/adm-cms-hb/paket" onClick={close}>
-            Paket
-          </Link>
-          {/* Home disunting lewat menu Kategori sesuai keputusan admin: tidak
-              ada entri sidebar sendiri, supaya halaman publik tidak bertambah
-              satu level menu yang isinya tumpang tindih dengan Kategori. */}
-          <Link href="/adm-cms-hb/kategori" onClick={close}>
-            Kategori
-          </Link>
-          <Link href="/adm-cms-hb/gallery" onClick={close}>
-            Galeri
-          </Link>
-          <Link href="/adm-cms-hb/halaman" onClick={close}>
-            Halaman Custom
-          </Link>
-          <Link href="/adm-cms-hb/sosmed" onClick={close}>
-            Sosmed
-          </Link>
-          <Link href="/adm-cms-hb/pengaturan" onClick={close}>
-            Pengaturan
-          </Link>
+          {NAV_ITEMS.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={close}
+                className={active ? "is-active" : undefined}
+                aria-current={active ? "page" : undefined}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <form action={logoutAction} className="admin-sidebar-foot">
