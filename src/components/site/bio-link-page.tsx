@@ -1,12 +1,14 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-// Halaman link-bio memakai <img> biasa: logo & galeri ukurannya dinamis dan
-// tanpa rasio tetap (masonry), sedangkan optimasi next/image tidak dibutuhkan
-// untuk satu halaman berdiri sendiri ini.
+// Halaman link-bio memakai <img> biasa karena ukuran dinamis/masonry.
+// URL R2 tetap diarahkan lewat optimizer Next agar tampil di jaringan yang
+// memblokir akses langsung ke `r2.dev`.
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+
+import { isOptimizableImage } from "@/lib/media";
 
 import {
   formatRupiah,
@@ -20,6 +22,11 @@ import { BACK_HOME_BUTTON_HTML } from "@/lib/halaman-back-button";
 
 /** Render prop yang dipakai pratinjau admin untuk membuka group field. */
 export type BioSectionWrap = (id: string, node: ReactNode) => ReactNode;
+
+function bioImageSrc(src: string, width: number): string {
+  if (!isOptimizableImage(src)) return src;
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+}
 
 function WaIcon() {
   return (
@@ -85,7 +92,7 @@ export function BioLinkPage({
             "hero",
             <div className="hb-hero">
               {data.logo ? (
-                <img className="hb-logo" src={data.logo} alt={data.logoAlt || data.brand} />
+                <img className="hb-logo" src={bioImageSrc(data.logo, 256)} alt={data.logoAlt || data.brand} />
               ) : null}
               <div className="hb-brand">{data.brand}</div>
               {data.tag ? <div className="hb-tag">{data.tag}</div> : null}
@@ -174,7 +181,7 @@ export function BioLinkPage({
                       <div className="hb-top">
                         <div className="hb-ico">
                           {item.image ? (
-                            <img loading="lazy" src={item.image} alt="" />
+                            <img loading="lazy" src={bioImageSrc(item.image, 256)} alt="" />
                           ) : item.emoji}
                         </div>
                         <div className="hb-body">
@@ -215,7 +222,7 @@ export function BioLinkPage({
                 <div className="hb-gal">
                   {data.gallery.map((image, index) => (
                     <figure key={index}>
-                      <img loading="lazy" src={image.url} alt={image.alt} />
+                      <img loading="lazy" src={bioImageSrc(image.url, 640)} alt={image.alt} />
                     </figure>
                   ))}
                 </div>,
