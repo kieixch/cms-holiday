@@ -196,6 +196,7 @@ function parseSource(source: Source): BioLinkPageData {
     ctaText: $("a.hb-cta p").first().text().trim(),
     ctaLabel: $("a.hb-cta span").first().text().trim(),
     ctaMessage: waMessage(ctaHref),
+    ctaWaLink: "",
 
     footerText: richText($, ".hb-end p"),
     footerLegal: footerLegal.text().trim(),

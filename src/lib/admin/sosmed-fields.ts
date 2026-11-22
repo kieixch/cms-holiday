@@ -274,6 +274,13 @@ export function sosmedSections(): FieldSection[] {
         { kind: "text", name: "ctaTitle", label: "Judul", width: "full" },
         { kind: "textarea", name: "ctaText", label: "Teks", rows: 2, width: "full" },
         { kind: "text", name: "ctaLabel", label: "Teks tombol", width: "half" },
+        {
+          kind: "text",
+          name: "ctaWaLink",
+          label: "Link rotator tombol CTA",
+          width: "half",
+          help: "Opsional. Link alternatif (mis. Bitly) yang menggantikan wa.me untuk tombol CTA. Kosongkan untuk memakai nomor WhatsApp.",
+        },
         { kind: "textarea", name: "ctaMessage", label: "Pesan WhatsApp tombol", rows: 2, width: "full" },
       ],
     },

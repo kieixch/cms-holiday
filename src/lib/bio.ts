@@ -80,6 +80,8 @@ export type BioLinkPageData = {
   ctaText: string;
   ctaLabel: string;
   ctaMessage: string;
+  /** Link rotator (mis. Bitly) untuk tombol CTA. Kosong = wa.me. */
+  ctaWaLink: string;
 
   // Footer
   footerText: string;
@@ -118,6 +120,7 @@ export function emptyBio(): BioLinkPageData {
     ctaText: "",
     ctaLabel: "",
     ctaMessage: "",
+    ctaWaLink: "",
     footerText: "",
     footerLegal: "",
   };
@@ -249,6 +252,7 @@ export function normalizeBio(value: unknown): BioLinkPageData {
     ctaText: asString(value.ctaText),
     ctaLabel: asString(value.ctaLabel),
     ctaMessage: asString(value.ctaMessage),
+    ctaWaLink: asString(value.ctaWaLink),
     footerText: asString(value.footerText),
     footerLegal: asString(value.footerLegal),
   };

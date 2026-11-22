@@ -237,7 +237,7 @@ export function BioLinkPage({
                 className="hb-cta"
                 target="_blank"
                 rel="noopener"
-                href={waHref(data.waNumber, data.ctaMessage)}
+                href={waButtonHref(data.ctaWaLink, data.waNumber, data.ctaMessage)}
               >
                 <h3>{data.ctaTitle}</h3>
                 <p>{data.ctaText}</p>
