@@ -52,22 +52,27 @@ export function BioLinkPage({
   const [active, setActive] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const rootRef = useCallback((node: HTMLDivElement | null) => {
+    setPortalTarget(node);
+  }, []);
+  const inPreview = Boolean(section);
 
   const close = useCallback(() => {
     setShown(false);
     window.setTimeout(() => {
       setMounted(false);
       setActive(null);
-      document.body.style.overflow = "";
+      if (!inPreview) document.body.style.overflow = "";
     }, 260);
-  }, []);
+  }, [inPreview]);
 
   const open = useCallback((index: number) => {
     setActive(index);
     setMounted(true);
-    document.body.style.overflow = "hidden";
+    if (!inPreview) document.body.style.overflow = "hidden";
     requestAnimationFrame(() => setShown(true));
-  }, []);
+  }, [inPreview]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -82,7 +87,7 @@ export function BioLinkPage({
 
   return (
     <>
-      <div className="hbgl-bio">
+      <div className="hbgl-bio" ref={rootRef} style={inPreview ? { position: "relative", overflow: "hidden" } : undefined}>
         <div
           className="hbgl-bio__back"
           dangerouslySetInnerHTML={{ __html: BACK_HOME_BUTTON_HTML }}
@@ -263,13 +268,14 @@ export function BioLinkPage({
         </div>
       </div>
 
-      {mounted && pkg
+      {mounted && pkg && portalTarget
         ? createPortal(
             <div
               className={`hbgl-bioportal on${shown ? " show" : ""}`}
               role="dialog"
-              aria-modal="true"
+              aria-modal={!inPreview}
               aria-label={pkg.name}
+              style={inPreview ? { position: "absolute", inset: 0, zIndex: 40 } : undefined}
             >
               <div className="hb-backdrop" onClick={close} />
               <div className="hb-sheet">
@@ -381,7 +387,7 @@ export function BioLinkPage({
                 </div>
               </div>
             </div>,
-            document.body,
+            portalTarget,
           )
         : null}
     </>
