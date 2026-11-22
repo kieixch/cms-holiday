@@ -180,9 +180,15 @@ function parseSource(source: Source): BioLinkPageData {
       price,
     })),
     openTripNote: noteMatch ? noteMatch[1].trim() : "",
+    openTripWaNumber: "",
+    openTripWaGreeting: "",
+    openTripWaLink: "",
 
     privateTripLabel: sectionLabels[1] ?? "",
     packages: buildPackages(paketRows),
+    privateTripWaNumber: "",
+    privateTripWaGreeting: "",
+    privateTripWaLink: "",
 
     galleryLabel: sectionLabels[2] ?? "",
     gallery: $(".hb-gal figure img")

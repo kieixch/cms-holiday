@@ -124,6 +124,29 @@ export function sosmedSections(): FieldSection[] {
       fields: [
         { kind: "text", name: "openTripLabel", label: "Judul bagian", width: "full" },
         {
+          kind: "text",
+          name: "openTripWaNumber",
+          label: "Nomor WhatsApp Open Trip",
+          width: "half",
+          disabledWhen: "openTripWaLink",
+          help: "Kosong = nomor WhatsApp hero.",
+        },
+        {
+          kind: "text",
+          name: "openTripWaGreeting",
+          label: "Sapaan pesan otomatis Open Trip",
+          width: "half",
+          disabledWhen: "openTripWaLink",
+          help: "Kosong = sapaan hero.",
+        },
+        {
+          kind: "text",
+          name: "openTripWaLink",
+          label: "Link rotator Open Trip",
+          width: "full",
+          help: "Opsional. Link alternatif untuk semua tombol Open Trip. Kosong = wa.me.",
+        },
+        {
           kind: "repeater",
           name: "openTrips",
           label: "Daftar Open Trip",
@@ -152,6 +175,29 @@ export function sosmedSections(): FieldSection[] {
       help: "Paket private: itinerary, tabel harga, dan fasilitas.",
       fields: [
         { kind: "text", name: "privateTripLabel", label: "Judul bagian", width: "full" },
+        {
+          kind: "text",
+          name: "privateTripWaNumber",
+          label: "Nomor WhatsApp Private Trip",
+          width: "half",
+          disabledWhen: "privateTripWaLink",
+          help: "Kosong = nomor WhatsApp hero.",
+        },
+        {
+          kind: "text",
+          name: "privateTripWaGreeting",
+          label: "Sapaan pesan otomatis Private Trip",
+          width: "half",
+          disabledWhen: "privateTripWaLink",
+          help: "Kosong = sapaan hero.",
+        },
+        {
+          kind: "text",
+          name: "privateTripWaLink",
+          label: "Link rotator Private Trip",
+          width: "full",
+          help: "Opsional. Link alternatif untuk tombol pesan Private Trip. Kosong = wa.me.",
+        },
         {
           kind: "repeater",
           name: "packages",

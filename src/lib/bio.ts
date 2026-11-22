@@ -66,10 +66,16 @@ export type BioLinkPageData = {
   openTripLabel: string;
   openTrips: BioOpenTrip[];
   openTripNote: string;
+  openTripWaNumber: string;
+  openTripWaGreeting: string;
+  openTripWaLink: string;
 
   // Private Trip
   privateTripLabel: string;
   packages: BioPackage[];
+  privateTripWaNumber: string;
+  privateTripWaGreeting: string;
+  privateTripWaLink: string;
 
   // Galeri
   galleryLabel: string;
@@ -114,8 +120,14 @@ export function emptyBio(): BioLinkPageData {
     openTripLabel: "",
     openTrips: [],
     openTripNote: "",
+    openTripWaNumber: "",
+    openTripWaGreeting: "",
+    openTripWaLink: "",
     privateTripLabel: "",
     packages: [],
+    privateTripWaNumber: "",
+    privateTripWaGreeting: "",
+    privateTripWaLink: "",
     galleryLabel: "",
     gallery: [],
     ctaTitle: "",
@@ -248,8 +260,14 @@ export function normalizeBio(value: unknown): BioLinkPageData {
     openTripLabel: asString(value.openTripLabel),
     openTrips: Array.isArray(value.openTrips) ? value.openTrips.map(toOpenTrip) : [],
     openTripNote: asString(value.openTripNote),
+    openTripWaNumber: asString(value.openTripWaNumber),
+    openTripWaGreeting: asString(value.openTripWaGreeting),
+    openTripWaLink: asString(value.openTripWaLink),
     privateTripLabel: asString(value.privateTripLabel),
     packages: Array.isArray(value.packages) ? value.packages.map(toPackage) : [],
+    privateTripWaNumber: asString(value.privateTripWaNumber),
+    privateTripWaGreeting: asString(value.privateTripWaGreeting),
+    privateTripWaLink: asString(value.privateTripWaLink),
     galleryLabel: asString(value.galleryLabel),
     gallery: Array.isArray(value.gallery) ? value.gallery.map(toGalleryImage) : [],
     ctaTitle: asString(value.ctaTitle),

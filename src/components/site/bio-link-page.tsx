@@ -13,7 +13,6 @@ import { isOptimizableImage } from "@/lib/media";
 import {
   formatRupiah,
   packageMinPrice,
-  waHref,
   type BioLinkPageData,
   type BioPackage,
 } from "@/lib/bio";
@@ -138,9 +137,10 @@ export function BioLinkPage({
                       key={index}
                       target="_blank"
                       rel="noopener"
-                      href={waHref(
-                        data.waNumber,
-                        `${data.waGreeting} Holiday Banyuwangi, saya mau tanya Open Trip ${trip.name} (${trip.schedule})`,
+                      href={waButtonHref(
+                        data.openTripWaLink,
+                        data.openTripWaNumber || data.waNumber,
+                        `${(data.openTripWaGreeting || data.waGreeting).trim()} Holiday Banyuwangi, saya mau tanya Open Trip ${trip.name} (${trip.schedule})`.trim(),
                       )}
                     >
                       <span className="hb-rnum">{index + 1}</span>
@@ -376,9 +376,10 @@ export function BioLinkPage({
                     className="hb-wa"
                     target="_blank"
                     rel="noopener"
-                    href={waHref(
-                      data.waNumber,
-                      `${data.waGreeting} Holiday Banyuwangi, saya mau tanya ${pkg.name}`,
+                    href={waButtonHref(
+                      data.privateTripWaLink,
+                      data.privateTripWaNumber || data.waNumber,
+                      `${(data.privateTripWaGreeting || data.waGreeting).trim()} Holiday Banyuwangi, saya mau tanya ${pkg.name}`.trim(),
                     )}
                   >
                     <WaIcon />
